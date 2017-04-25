@@ -36,6 +36,7 @@ def find_dicom_series(root_dir, expected_metadata):
     this series is relevant. If so, load entire directory, if not, move to next directory"""
 
     dicom_series = []
+
     case_dirs = [os.path.join(root_dir, x) for x in os.listdir(root_dir)]
     
     print("Found", len(case_dirs), "case(s).")
@@ -65,4 +66,12 @@ def find_dicom_series(root_dir, expected_metadata):
         
         if not scan_found:
             print ("Could not find a scan for case", case_dir)
+
     return dicom_series
+
+# Example usage
+# rootdir = 'C:/Users/Jeftha/Downloads/DOI/'
+# key = '0008|103e'
+# value = 'ADC'
+#
+# find_dicom_series(rootdir, key, value)
