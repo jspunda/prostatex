@@ -22,7 +22,7 @@ def find_dicom_series(root_dir, key, value):
     dicom_series = []
     sub_dirs = [x[0] for x in os.walk(root_dir)]  # Gather all subdirectories in 'root_dir'
     for directory in sub_dirs:
-        file = glob.glob(glob.glob(directory + '/*.dcm'))[0]  # Checking just one .dcm file is sufficient
+        file = glob.glob(directory + '/*.dcm')[0]  # Checking just one .dcm file is sufficient
         img = SimpleITK.ReadImage(file)  # Read single .dcm file to obtain metadata
         if value in img.GetMetaData(key):  # Check whether metadata key contains the right value
             dicom_series.append(load_dicom_series(directory))  # Loads all slices at once
