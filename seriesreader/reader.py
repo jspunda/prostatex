@@ -3,15 +3,6 @@ import glob
 import os
 
 
-def load_dicom_series(input_dir):
-    """Reads an entire DICOM series of slices from 'input_dir' and returns its pixel data as an array."""
-
-    reader = SimpleITK.ImageSeriesReader()
-    dicom_names = reader.GetGDCMSeriesFileNames(input_dir)
-    reader.SetFileNames(dicom_names)
-    dicom_series = reader.Execute()
-    return SimpleITK.GetArrayFromImage(dicom_series)
-
 def check_scan_metadata(scan_directory, expected_metadata):
     scan_files = glob.glob(scan_directory + '/*.dcm')
     
@@ -24,18 +15,9 @@ def check_scan_metadata(scan_directory, expected_metadata):
             return False
     return True
     
-def find_ADC_dicom_series(dir):
-    metadata = {'0008|103e':'ADC'}
-    return find_dicom_series(dir, metadata)
     
-def find_dicom_series(root_dir, expected_metadata):
-    """Returns the DICOM series for scans that have the expected metadata
-    for all the cases in 'root_dir' (i.e. the 'DOI' folder). 
-    Since DICOM metadata is lost when reading all slices at once, 
-    we first check a single .dcm slice to determine whether
-    this series is relevant. If so, load entire directory, if not, move to next directory"""
-
-    dicom_series = []
+def find_dicom_series_paths(root_dir, expected_metadata):
+    series_paths = []
     case_dirs = [os.path.join(root_dir, x) for x in os.listdir(root_dir)]
     
     print("Found", len(case_dirs), "case(s).")
@@ -45,7 +27,7 @@ def find_dicom_series(root_dir, expected_metadata):
         # one folder with a 'numbers' name (e.g. "1.3.6.1.4.1.14519.5.2.1.7311.5101.158323547117540061132729905711")
         subdirs = os.listdir(case_dir)
         if len(subdirs) != 1:
-            print("Unexpectedly found multiple folders for case", case_dir)
+            print("Unexpectedly found multiple or no folders for case", case_dir)
             print("Skipping this case for now.")
             continue
 
@@ -56,8 +38,7 @@ def find_dicom_series(root_dir, expected_metadata):
         
         for scan_dir in scan_dirs:
             if check_scan_metadata(scan_dir, expected_metadata):
-                # Loads all slices at once
-                dicom_series.append(load_dicom_series(scan_dir))  
+                series_paths.append(scan_dir)  
                 
                 if scan_found:
                     print("Found another scan with matching metadata.", scan_dir)
@@ -65,4 +46,25 @@ def find_dicom_series(root_dir, expected_metadata):
         
         if not scan_found:
             print ("Could not find a scan for case", case_dir)
+    return series_paths
+    
+    
+def load_dicom_series(input_dir):
+    """Reads an entire DICOM series of slices from 'input_dir' and returns its pixel data as an array."""
+
+    reader = SimpleITK.ImageSeriesReader()
+    dicom_names = reader.GetGDCMSeriesFileNames(input_dir)
+    reader.SetFileNames(dicom_names)
+    dicom_series = reader.Execute()
+    return SimpleITK.GetArrayFromImage(dicom_series)
+
+    
+def load_all_ADC_dicom_series(dir):
+    metadata = {'0008|103e':'ADC'}
+    return load_all_dicom_series(dir, metadata)
+    
+    
+def load_all_dicom_series(root_dir, expected_metadata):
+    series_paths = find_dicom_series_paths(root_dir, expected_metadata)
+    dicom_series = [load_dicom_series(path) for path in series_paths]
     return dicom_series
