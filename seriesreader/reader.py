@@ -16,8 +16,10 @@ def check_scan_metadata(scan_directory, expected_metadata):
     return True
     
     
+
 def find_dicom_series_paths(root_dir, expected_metadata):
     series_paths = []
+
     case_dirs = [os.path.join(root_dir, x) for x in os.listdir(root_dir)]
     
     print("Found", len(case_dirs), "case(s).")
@@ -46,6 +48,7 @@ def find_dicom_series_paths(root_dir, expected_metadata):
         
         if not scan_found:
             print ("Could not find a scan for case", case_dir)
+
     return series_paths
     
     
