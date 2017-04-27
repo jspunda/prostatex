@@ -16,19 +16,6 @@ def check_scan_metadata(scan_directory, expected_metadata):
     return True
     
     
-def check_equal_voxel_size(series_paths):
-    values = set()
-    for directory in series_paths:
-        scan_files = glob.glob(directory + '/*.dcm')
-        
-        # Read single .dcm file to obtain metadata
-        img = SimpleITK.ReadImage(scan_files[0])
-        
-        values.add(img.GetSpacing())
-    
-    return len(values) == 1
-
-
 def find_dicom_series_paths(root_dir, expected_metadata):
     series_paths = []
 
