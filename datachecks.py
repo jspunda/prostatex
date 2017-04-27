@@ -1,4 +1,6 @@
 import loaders.seriesloader as seriesloader
+import glob
+import SimpleITK
 
 DATA_DIR = "/scratch-shared/ISMI/prostatex/train-data/images/DOI"
 
