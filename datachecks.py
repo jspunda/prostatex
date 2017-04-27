@@ -1,10 +1,10 @@
-import seriesreader.reader as reader
+import loaders.seriesloader as seriesloader
 
-DATA_DIR = 
+DATA_DIR = "/scratch-shared/ISMI/prostatex/train-data/images/DOI"
 
 def check_equal_voxel_size(metadata):
-    series_paths = reader.find_dicom_series_paths(DATA_DIR, metadata)
-    if reader.check_equal_voxel_size(series_paths):
+    series_paths = seriesloader.find_dicom_series_paths(DATA_DIR, metadata)
+    if seriesloader.check_equal_voxel_size(series_paths):
         print("The scans have the same voxel size")
     else:
         print("Found different voxel sizes for the scans with the following metadata:", metadata)
