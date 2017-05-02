@@ -15,9 +15,9 @@ def extract_lesion_2d(img, centroid_position, size=10):
     y_start = int(centroid_position.y - size / 2)
     y_end = int(centroid_position.y + size / 2)
 
-    slice = img[centroid_position.z]
+    img_slice = img[centroid_position.z]
 
-    return slice[y_start:y_end, x_start:x_end]
+    return img_slice[y_start:y_end, x_start:x_end]
 
 
 def plot_h5_slice(h5_path, slice=0):
