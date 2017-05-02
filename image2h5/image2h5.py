@@ -6,6 +6,7 @@ H5_DATASET_NAME = 'img_h5'
 
 
 def img_to_h5(img_dir, h5_output_name):
+    """ Saves all slices from an image to a h5 file. """
     img = load_dicom_series(img_dir)
 
     with h5py.File(h5_output_name, 'w') as f:
@@ -15,6 +16,7 @@ def img_to_h5(img_dir, h5_output_name):
 
 
 def h5_to_img(h5_input_name):
+    """ Loads image data from a h5 file. """
     with h5py.File(h5_input_name, 'r') as f:
         return f[H5_DATASET_NAME][:]
 
