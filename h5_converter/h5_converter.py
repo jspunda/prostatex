@@ -18,10 +18,9 @@ The HDF5 set will be of the following form:
 |
 |---[DICOM_Series_name {1}]/  (For example ep2d_diff_tra_DYNDIST_ADC)
 |   |
-|   |--- Attributes kept from DICOM header: For now just patient age and DICOM_series_Num
-|   |
 |   |---'pixel_array'/
 |   |   |
+|   |   |--- Attributes kept from DICOM header: For now just patient age and DICOM_series_Num
 |   |   |--- Raw pixel array (i.e. all DICOM slices for this series)
 |   |
 |   |---'lesions'/
@@ -41,10 +40,9 @@ The HDF5 set will be of the following form:
 |   |
 |---[DICOM_Series_name {2}]/ (For example t2_tse_cor)
 |   |
-|   |--- Attributes kept from DICOM header: For now just patient age and DICOM_series_Num
-|   |
 |   |---'pixel_array'/
 |   |   |
+|   |   |--- Attributes kept from DICOM header: For now just patient age and DICOM_series_Num
 |   |   |--- Raw pixel array (i.e. all DICOM slices for this series)
 |   |
 |   |---'lesions'/
