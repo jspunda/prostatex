@@ -4,41 +4,8 @@ import collections
 
 class Query:
     """
-    This class represents a query to the hdf5 prostatex-train.hdf5 dataset. Returns a dict of the form:
-    
-    [ProstateX-{1}]/ (Arbitrary patient_id, since python dicts are unordered)
-    |
-    |---[DICOM_Series_name {1}]/  (For example ep2d_diff_tra_DYNDIST_ADC)
-    |   |
-    |   |---'pixel_array'/
-    |   |   |
-    |   |   |--- Raw pixel array (i.e. all DICOM slices)
-    |   |
-    |   |---'lesions'/
-    |   |   |
-    |   |   |--- List of lesions with attributes ijk, spacing, zone, clinsig
-    |   |
-    |---[DICOM_Series_name {2}]/ (For example t2_tse_cor)
-    |   |
-    |   |---'pixel_array'/
-    |   |   |
-    |   |   |--- Raw pixel array (i.e. all DICOM slices)
-    |   |
-    |   |---'lesions'/
-    |   |   |
-    |   |   |--- List of lesions with attributes ijk, spacing, zone, clinsig
-    |   |
-    |--- ...
-    |   .
-    |   .
-    |   .
-    [ProstateX-{2}]/ (Arbitrary patient_id, since python dicts are unordered)
-    |
-    |--- ...
-    .
-    .
-    .
-    
+    This class represents a query to the hdf5 prostatex-train.hdf5 dataset. Returns a dict containing a subset
+    of hdf5 dataset that matches the query words.
     """
     def __init__(self, h5_file, query_words):
         self.h5_file = h5_file
@@ -53,35 +20,23 @@ class Query:
             for word in self.query_words:  # Query word by word
                 for dcm_desc in self.h5_file[patient].keys():  # Per patient_id, traverse all DICOM series names
                     if word in dcm_desc:  # If query word is present in DICOM series name
-                        img = self.h5_file[patient][dcm_desc]['pixel_array'][:]  # Extract raw pixel array from series
+                        # Extract group containing image data and belonging lesions
+                        img = self.h5_file[patient][dcm_desc]
                         self.result[patient][dcm_desc] = {}
-                        self.result[patient][dcm_desc]['pixel_array'] = img  # Add pixel array to query result
-                        lesions = []
-                        # Traverse all lesions for this DICOM series
-                        for lesion in self.h5_file[patient][dcm_desc]['lesions'].keys():
-                            # Extract relevant lesion attributes per lesion
-                            lesion_to_add = {
-                                'ijk': self.h5_file[patient][dcm_desc]['lesions'][lesion].attrs.get('ijk'),
-                                'VoxelSpacing': self.h5_file[patient][dcm_desc]['lesions'][lesion]
-                                    .attrs.get('VoxelSpacing'),
-                                'Zone': self.h5_file[patient][dcm_desc]['lesions'][lesion].attrs.get('Zone'),
-                                'ClinSig': self.h5_file[patient][dcm_desc]['lesions'][lesion].attrs.get('ClinSig')
-                            }
-                            lesions.append(lesion_to_add)  # Gather lesions for this DICOM series (can be multiple)
-                        self.result[patient][dcm_desc]['lesions'] = lesions  # Add lesions to query result
+                        self.result[patient][dcm_desc] = img  # Append to query result
         return dict(self.result)
 
     def get_result(self):
-        return self.result
+        return dict(self.result)
 
     def print_result(self):
         for patient_id in self.result.keys():
             for dcm_desc in self.result[patient_id]:
-                for lesion_or_pixel in self.result[patient_id][dcm_desc]:
-                    if lesion_or_pixel == 'lesions':
-                        print ('Patient {} with DICOM series {} has {} lesion(s): {}'
-                               .format(patient_id, dcm_desc, len(self.result[patient_id][dcm_desc][lesion_or_pixel]),
-                                       self.result[patient_id][dcm_desc][lesion_or_pixel]))
+                print('For DICOM series {} found {} lesion(s) at:'
+                      .format(self.result[patient_id][dcm_desc].name,
+                              len(self.result[patient_id][dcm_desc]['lesions'])))
+                for finding_id in self.result[patient_id][dcm_desc]['lesions']:
+                    print(self.result[patient_id][dcm_desc]['lesions'][finding_id].attrs.get('ijk'))
 
 # Example usage, let's say we want pixel data and lesion attributes for all ADC and cor images
 # words = ['ADC', 'cor']
