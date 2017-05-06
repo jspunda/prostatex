@@ -14,7 +14,7 @@ have to download the new version. Rebuilding entire train set takes around 10-15
 
 The HDF5 set will be of the following form:
 
-[ProstateX-{1}]/ (Arbitrary patient_id, since python dicts are unordered)
+[ProstateX-0000]/
 |
 |---[DICOM_Series_name {1}]/  (For example ep2d_diff_tra_DYNDIST_ADC)
 |   |
@@ -60,7 +60,7 @@ The HDF5 set will be of the following form:
 |   .
 |   .
 |   .
-[ProstateX-{2}]/ (Arbitrary patient_id, since python dicts are unordered)
+[ProstateX-0001]/
 |
 |--- ...
 .
