@@ -1,101 +1,58 @@
 import h5py
-import collections
+
+"""Script that contains functionality to query our HDF5 dataset, using list comprehensions"""
 
 
-class Query:
-    """
-    This class represents a query to the hdf5 prostatex-train.hdf5 dataset. Returns a dict containing a subset
-    of hdf5 dataset that matches the query words.
-    """
-    def __init__(self, h5_file, query_words):
-        self.h5_file = h5_file
-        self.query_words = query_words
-        self.result = collections.defaultdict(dict)
+def dicom_series_query(h5_file, query_words):
+    """Returns a list of HDF5 groups of DICOM series that match words in query_words."""
+    query_result = [
+        h5_file[patient_id][dcm_series]  # We want patients with DICOM series such that:
+        for patient_id in h5_file.keys()  # For all patients
+            for dcm_series in h5_file[patient_id].keys()  # For all DICOM series
+                for word in query_words  # For every word in query words
+                    if word in dcm_series  # The word is present in DICOM series name
+    ]
+    return query_result
 
-    def run(self):
-        """Returns a dict containing all DICOM series and the lesions within them
-        that match self.query_words"""
+if __name__ == '__main__':
+    """Example usage"""
+# Some basic examples using list comprehension on our HDF5 set:
 
-        for patient in self.h5_file.keys():  # Traverse every patient_id
-            for word in self.query_words:  # Query word by word
-                for dcm_desc in self.h5_file[patient].keys():  # Per patient_id, traverse all DICOM series names
-                    if word in dcm_desc:  # If query word is present in DICOM series name
-                        # Extract group containing image data and belonging lesions
-                        img = self.h5_file[patient][dcm_desc]
-                        self.result[patient][dcm_desc] = {}
-                        self.result[patient][dcm_desc] = img  # Append to query result
-        return dict(self.result)
+h5 = h5py.File('C:\Users\Jeftha\stack\Rommel\ISMI\prostatex-train.hdf5', 'r')
 
-    def get_result(self):
-        return dict(self.result)
+# Selecting all patients
+patients = [h5[patient_id] for patient_id in h5.keys()]
+print(len(patients))
 
-    def print_result(self):
-        for patient_id in self.result.keys():
-            for dcm_desc in self.result[patient_id]:
-                print('For DICOM series {} found {} lesion(s) at:'
-                      .format(self.result[patient_id][dcm_desc].name,
-                              len(self.result[patient_id][dcm_desc]['lesions'])))
-                for finding_id in self.result[patient_id][dcm_desc]['lesions']:
-                    print(self.result[patient_id][dcm_desc]['lesions'][finding_id].attrs.get('ijk'))
+# Selecting all DICOM series
+# Note that this would take quite some time using our old approach
+# Now it's almost instant
+series = [h5[patient_id][dcm_series]
+          for patient_id in h5.keys()
+            for dcm_series in h5[patient_id].keys()]
+print(len(series))
 
-# Example usage, let's say we want pixel data and lesion attributes for all ADC and cor images
-# words = ['ADC', 'cor']
-# h5 = h5py.File('C:\Users\Jeftha\stack\Rommel\ISMI\prostatex-train.hdf5', 'r')
-#
-# q = Query(h5, words)
-# result = q.run()
-# q.print_result()
+# Selecting all 'ADC' DICOM series
+adc_series = [h5[patient_id][dcm_series]
+          for patient_id in h5.keys()
+            for dcm_series in h5[patient_id].keys()
+              if 'ADC' in dcm_series]
+print(len(adc_series))
 
+# Example of how to extract info from a dicom_series_query result
+words = ['ADC', 'cor']
+query = dicom_series_query(h5, words)
 
-
-
-### Old Callback approach (can be ignored for now) ###
-# def centroid_query_callback(name, obj):
-#     global query_words
-#     global query_result
-#     for word in query_words:
-#         if 'lesions/' in name and word in name:
-#             split = name.split('/')
-#             patient_id = split[0]
-#             dcm_desc = split[1]
-#             lesion = {
-#                 'ijk': obj.attrs.get('ijk'),
-#                 'VoxelSpacing': obj.attrs.get('VoxelSpacing'),
-#                 'ClinSig': obj.attrs.get('ClinSig')
-#             }
-#             try:
-#                 query_result[patient_id][dcm_desc]['lesions'].append(lesion)
-#             except KeyError:
-#                 query_result[patient_id][dcm_desc] = {}
-#                 query_result[patient_id][dcm_desc]['lesions'] = [lesion]
-#             print('Found {} with lesion {}'.format(name, obj.attrs.items()))
-#     return None
-#
-#
-# def query_callback(name, obj):
-#     global query_words
-#     global query_result
-#     for word in query_words:
-#         if 'pixel_array' in name and word in name:
-#             split = name.split('/')
-#             patient_id = split[0]
-#             dcm_desc = split[1]
-#             pixel_data = obj[:]
-#             try:
-#                 query_result[patient_id][dcm_desc]['pixels'].append(pixel_data)
-#             except KeyError:
-#                 query_result[patient_id][dcm_desc]['pixels'] = [pixel_data]
-#             print('Found {} with shape {}'.format(name, pixel_data.shape))
-#     return centroid_query_callback(name, obj)
-#
-# query_words = ['ADC', 'cor']
-# query_result = collections.defaultdict(dict)
-#
-# h5 = h5py.File('C:\Users\Jeftha\stack\Rommel\ISMI\prostatex-train.hdf5', 'r')
-# dict(query_result)
-# # h5.visititems(query_callback)
-# for key in query_result.keys():
-#     for key1 in query_result[key]:
-#         for key2 in query_result[key][key1]:
-#             if key2 == 'lesions':
-#                 print ('Patient {} with dcmdesc {} has lesions {}'.format(key, key1, query_result[key][key1][key2]))
+for h5_group in query:
+    pixel_array = h5_group['pixel_array'][:]  # The actual DICOM pixel data
+    # patient_age = h5_group['pixel_array'].attrs.get('Age')
+    lesion_info = [
+        [
+            # Per lesion finding, gather the attributes necessary for actual lesion extraction from DICOM image
+            h5_group['lesions'][finding_id].attrs.get('ijk'),
+            h5_group['lesions'][finding_id].attrs.get('VoxelSpacing'),
+            h5_group['lesions'][finding_id].attrs.get('ClinSig')
+        ]
+        for finding_id in h5_group['lesions'].keys()
+    ]
+    print ('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))
