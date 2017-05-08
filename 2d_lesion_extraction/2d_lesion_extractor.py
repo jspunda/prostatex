@@ -11,11 +11,16 @@ class Centroid:
         return '({}, {}, {})'.format(self.x, self.y, self.z)
 
 
-def extract_lesion_2d(img, centroid_position, size=10):
-    x_start = int(centroid_position.x - size / 2)
-    x_end = int(centroid_position.x + size / 2)
-    y_start = int(centroid_position.y - size / 2)
-    y_end = int(centroid_position.y + size / 2)
+def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
+    if imagetype == 'ADC':
+        if size == None:
+            sizecal = math.ceil(realsize / 2)
+    else:
+        sizecal = size
+    x_start = int(centroid_position.x - sizecal / 2)
+    x_end = int(centroid_position.x + sizecal / 2)
+    y_start = int(centroid_position.y - sizecal / 2)
+    y_end = int(centroid_position.y + sizecal / 2)
 
     # Quick try-except fix for possibly miss-annotated centroid coords (Known cases: ProstateX-0154)
     try:
@@ -51,14 +56,14 @@ def get_adc_centroids_from_csv(filename):
     return centroids
 
 
-def get_lesions_from_imgs(centroids, imgs, lesion_size):
+def get_lesions_from_imgs(centroids, imgs, lesion_size, real_leison_size, imagetype):
     lesions = {}
     for key in imgs:
         pixel_array = imgs[key][0]  # For now imgs[key] contains a list, might change later to single object
         lesion_pixel_array = []
         for centroid in centroids[key]:
             print('Extracting lesions on pos {} for {}'.format(centroid, key))
-            lesion_pixel_array.append(extract_lesion_2d(pixel_array, centroid, lesion_size))
+            lesion_pixel_array.append(extract_lesion_2d(pixel_array, centroid, lesion_size, real_leison_size, imagetype))
         lesions[key] = lesion_pixel_array
     return lesions
 
@@ -120,7 +125,7 @@ images = find_dicom_series(rootdir, key, value)
 print(len(images))
 centroids = get_adc_centroids_from_csv(file)
 print(len(centroids))
-lesions = get_lesions_from_imgs(centroids, images, 20)
+lesions = get_lesions_from_imgs(centroids, images, None, 20, 'ADC')
 print(len(lesions))
 
 # Plot one lesion
