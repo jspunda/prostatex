@@ -1,5 +1,13 @@
 import csv
+
+import math
 from matplotlib import pyplot as plt
+
+###### Modified old version of DICOM image reader below, since new one returns in different patientID order#######
+import SimpleITK
+import glob
+import os
+
 
 class Centroid:
     def __init__(self, x, y, z):
@@ -13,7 +21,7 @@ class Centroid:
 
 def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
     if imagetype == 'ADC':
-        if size == None:
+        if size is None:
             sizecal = math.ceil(realsize / 2)
     else:
         sizecal = size
@@ -63,15 +71,10 @@ def get_lesions_from_imgs(centroids, imgs, lesion_size, real_leison_size, imaget
         lesion_pixel_array = []
         for centroid in centroids[key]:
             print('Extracting lesions on pos {} for {}'.format(centroid, key))
-            lesion_pixel_array.append(extract_lesion_2d(pixel_array, centroid, lesion_size, real_leison_size, imagetype))
+            lesion_pixel_array.append(
+                extract_lesion_2d(pixel_array, centroid, lesion_size, real_leison_size, imagetype))
         lesions[key] = lesion_pixel_array
     return lesions
-
-
-###### Modified old version of DICOM image reader below, since new one returns in different patientID order#######
-import SimpleITK
-import glob
-import os
 
 
 def load_dicom_series(input_dir):
@@ -109,6 +112,7 @@ def find_dicom_series(root_dir, key, value):
                         dicom_series[patient_id] = [series]
 
     return dicom_series
+
 
 # 'Abnormal' cases (i.e cases with multiple ADC series)
 ignore_list = ['ProstateX-0025', 'ProstateX-0031', 'ProstateX-0190', 'ProstateX-0191']

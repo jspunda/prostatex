@@ -1,4 +1,3 @@
-import h5py
 import SimpleITK
 import glob
 import os
@@ -134,8 +133,6 @@ def train_csv_to_h5(csv_file, h5):
                 group.attrs.create('ClinSig', clin_sig, dtype='S10')
             except ValueError:
                 print('Skipping duplicate {}'.format(pathname))
-
-
 
 # Example usage
 # h5file = h5py.File('prostatex-train.hdf5', 'w')

@@ -1,11 +1,9 @@
 import csv
 
-
 """Script that takes ProstateX-Findings-Train.csv and adds per lesion its zone and clinsig information
 to the corrects rows in ProstateX-Images-Train.csv, so all lesion information is inside ProstateX-Images-Train.csv
 
 Only has to be run once, so hdf5 conversion later on needs to draw from just one .csv file"""
-
 
 images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
                    '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train.csv'
@@ -28,7 +26,7 @@ with open(images_train_csv, 'rb')as images_train:
         for images_row in reader_images:
             for findings_row in all_findings_rows:
                 if images_row[3] in findings_row:  # if the positions match, these rows belong to the same lesion
-                    print images_row[0], images_row[3], findings_row[2]
+                    print(images_row[0], images_row[3], findings_row[2])
                     images_row.append(findings_row[3])
                     images_row.append(findings_row[4])
                     new_rows.append(images_row)
