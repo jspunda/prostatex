@@ -1,4 +1,5 @@
 import math
+import h5py
 from h5_converter.h5_query import get_lesion_info
 
 
