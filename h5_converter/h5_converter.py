@@ -2,6 +2,7 @@ import SimpleITK
 import glob
 import os
 import csv
+import h5py
 from loaders.seriesloader import load_dicom_series
 
 """
@@ -74,26 +75,28 @@ def dicom_to_h5(root_dir, h5):
     for directory in sub_dirs:
         # print(directory)
         file_list = glob.glob(directory + '/*.dcm')  # Look for .dcm files
-        if file_list:  # If we find a dir with a .dcm series, process it
-            dcm_filename = file_list[0]  # Checking just one .dcm file is sufficient
-            img = SimpleITK.ReadImage(dcm_filename)  # Read single .dcm file to obtain metadata
+        if not file_list:  # If we find a dir with a .dcm series, process it
+            continue
 
-            # Extract some metadata that we want to keep
-            patient_id = img.GetMetaData('0010|0020').strip()
-            patient_age = img.GetMetaData('0010|1010').strip()
-            series_number = img.GetMetaData('0020|0011').strip()
-            series_description = img.GetMetaData('0008|103e').strip()
-            # Combine series description and series number to create a unique identifier for this DICOM series.
-            # Should be unique for each patient. Only exception is ProstateX-0025, hence the try: except: approach.
-            data_path = patient_id + '/' + series_description + '_' + series_number
-            try:
-                print(patient_id)
-                group = h5.create_group(data_path)
-                pixeldata = group.create_dataset('pixel_array', data=load_dicom_series(directory))
-                pixeldata.attrs.create('Age', patient_age)
-                pixeldata.attrs.create('SeriesNr', series_number)
-            except ValueError:
-                print('Skipping duplicate {}'.format(data_path))
+        dcm_filename = file_list[0]  # Checking just one .dcm file is sufficient
+        img = SimpleITK.ReadImage(dcm_filename)  # Read single .dcm file to obtain metadata
+
+        # Extract some metadata that we want to keep
+        patient_id = img.GetMetaData('0010|0020').strip()
+        patient_age = img.GetMetaData('0010|1010').strip()
+        series_number = img.GetMetaData('0020|0011').strip()
+        series_description = img.GetMetaData('0008|103e').strip()
+        # Combine series description and series number to create a unique identifier for this DICOM series.
+        # Should be unique for each patient. Only exception is ProstateX-0025, hence the try: except: approach.
+        data_path = patient_id + '/' + series_description + '_' + series_number
+        try:
+            print(patient_id)
+            group = h5.create_group(data_path)
+            pixeldata = group.create_dataset('pixel_array', data=load_dicom_series(directory))
+            pixeldata.attrs.create('Age', patient_age)
+            pixeldata.attrs.create('SeriesNr', series_number)
+        except ValueError:
+            print('Skipping duplicate {}'.format(data_path))
 
 
 def train_csv_to_h5(csv_file, h5):
@@ -134,11 +137,13 @@ def train_csv_to_h5(csv_file, h5):
             except ValueError:
                 print('Skipping duplicate {}'.format(pathname))
 
-# Example usage
-# h5file = h5py.File('prostatex-train.hdf5', 'w')
-# dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
-# images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
-#                    '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
-#
-# dicom_to_h5(dcm_folder, h5file)
-# train_csv_to_h5(images_train_csv, h5file)
+
+if __name__ == "__main__":
+    # Example usage
+    h5file = h5py.File('prostatex-train.hdf5', 'w')
+    dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
+    images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
+                       '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
+
+    dicom_to_h5(dcm_folder, h5file)
+    train_csv_to_h5(images_train_csv, h5file)
