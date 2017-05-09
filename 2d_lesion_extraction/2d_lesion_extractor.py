@@ -1,6 +1,8 @@
 import math
 import h5py
 from h5_converter.h5_query import get_lesion_info
+from matplotlib import pyplot
+import sys
 
 
 class Centroid:
@@ -40,14 +42,20 @@ def parse_centroid(ijk):
 
 
 if __name__ == "__main__":
+    """ Example usage: """
     h5_file = h5py.File('C:\\Users\\kbasten\\Downloads\\prostatex-train.hdf5', 'r')
     lesion_info = get_lesion_info(h5_file)
 
     for infos, image in lesion_info:
         for lesion in infos:
-            lesion_img = extract_lesion_2d(image, lesion[0], size=10)
+            centroid = parse_centroid(lesion['ijk'])
+            lesion_img = extract_lesion_2d(image, centroid, size=40)
 
             if lesion_img is None:
                 continue
 
+            print(lesion['name'])
+            pyplot.imshow(lesion_img, cmap='gray')
+            pyplot.show()
 
+            sys.exit(0)

@@ -23,12 +23,13 @@ def get_lesion_info(h5_file):
         pixel_array = h5_group['pixel_array'][:]  # The actual DICOM pixel data
         # patient_age = h5_group['pixel_array'].attrs.get('Age')
         lesion_info = [
-            [
+            {
                 # Per lesion finding, gather the attributes necessary for actual lesion extraction from DICOM image
-                h5_group['lesions'][finding_id].attrs.get('ijk'),
-                h5_group['lesions'][finding_id].attrs.get('VoxelSpacing'),
-                h5_group['lesions'][finding_id].attrs.get('ClinSig')
-            ]
+                'ijk': h5_group['lesions'][finding_id].attrs.get('ijk'),
+                'VoxelSpacing': h5_group['lesions'][finding_id].attrs.get('VoxelSpacing'),
+                'ClinSig': h5_group['lesions'][finding_id].attrs.get('ClinSig'),
+                'name': h5_group.name
+            }
             for finding_id in h5_group['lesions'].keys()
             ]
         lesions_info.append([lesion_info, pixel_array])
