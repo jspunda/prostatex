@@ -64,6 +64,6 @@ if __name__ == '__main__':
                   if 'ADC' in dcm_series]
     print(len(adc_series))
 
-    lesions_info = get_lesion_info(h5_file)
+    lesions_info = get_lesion_info(h5_file, ['ADC'])
     for pixel_array, lesion_info in lesions_info:
         print('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))
