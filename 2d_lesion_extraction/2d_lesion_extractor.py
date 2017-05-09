@@ -9,6 +9,10 @@ import glob
 import os
 
 
+# 'Abnormal' cases (i.e cases with multiple ADC series)
+IGNORE_LIST = ['ProstateX-0025', 'ProstateX-0031', 'ProstateX-0190', 'ProstateX-0191']
+
+
 class Centroid:
     def __init__(self, x, y, z):
         self.x = x
@@ -49,18 +53,22 @@ def get_adc_centroids_from_csv(filename):
     with open(filename, 'rb') as csv_file:
         reader = csv.reader(csv_file, delimiter=',')
         reader.next()  # Skipping first row (i.e. column names)
+
         for row in reader:
             patient_id = row[0]
             name = row[1]
             ijk_coords = row[5]
-            if patient_id not in ignore_list:
-                if 'ADC' in name:  # Check whether name contains 'ADC'
-                    c = parse_centroid(ijk_coords)  # Fifth column contains ijk coordinates for lesion centroid
-                    try:
-                        # We need to add a list of lesions, since there can be multiple lesions per ADC file
-                        centroids[patient_id].append(c)
-                    except KeyError:
-                        centroids[patient_id] = [c]  # If there is no entry for this patient yet, create it.
+            if patient_id in IGNORE_LIST:
+                continue
+
+            if 'ADC' in name:  # Check whether name contains 'ADC'
+                c = parse_centroid(ijk_coords)  # Fifth column contains ijk coordinates for lesion centroid
+                try:
+                    # We need to add a list of lesions, since there can be multiple lesions per ADC file
+                    centroids[patient_id].append(c)
+                except KeyError:
+                    centroids[patient_id] = [c]  # If there is no entry for this patient yet, create it.
+
     return centroids
 
 
@@ -74,6 +82,7 @@ def get_lesions_from_imgs(centroids, imgs, lesion_size, real_leison_size, imaget
             lesion_pixel_array.append(
                 extract_lesion_2d(pixel_array, centroid, lesion_size, real_leison_size, imagetype))
         lesions[key] = lesion_pixel_array
+
     return lesions
 
 
@@ -84,6 +93,7 @@ def load_dicom_series(input_dir):
     dicom_names = reader.GetGDCMSeriesFileNames(input_dir)
     reader.SetFileNames(dicom_names)
     dicom_series = reader.Execute()
+
     return SimpleITK.GetArrayFromImage(dicom_series)
 
 
@@ -101,37 +111,41 @@ def find_dicom_series(root_dir, key, value):
         if file_list:  # If we find a dir with a .dcm series, process it
             dcm_file = file_list[0]  # Checking just one .dcm file is sufficient
             img = SimpleITK.ReadImage(dcm_file)  # Read single .dcm file to obtain metadata
-            if value in img.GetMetaData(key):  # Check whether metadata key contains the right value
-                patient_id = directory.split('\\')[5]
-                if patient_id not in ignore_list:
-                    print('Loading images for {}'.format(patient_id))
-                    series = load_dicom_series(directory)  # Loads all slices at once
-                    try:
-                        dicom_series[patient_id].append(series)
-                    except KeyError:
-                        dicom_series[patient_id] = [series]
+            if value not in img.GetMetaData(key):  # Check whether metadata key contains the right value
+                continue
+
+            patient_id = directory.split('\\')[5]
+            if patient_id in IGNORE_LIST:  # ignore this patient_id
+                continue
+
+            print('Loading images for {}'.format(patient_id))
+            series = load_dicom_series(directory)  # Loads all slices at once
+            try:
+                dicom_series[patient_id].append(series)
+            except KeyError:
+                dicom_series[patient_id] = [series]
 
     return dicom_series
 
 
-# 'Abnormal' cases (i.e cases with multiple ADC series)
-ignore_list = ['ProstateX-0025', 'ProstateX-0031', 'ProstateX-0190', 'ProstateX-0191']
+if __name__ == "__main__":
+    # Example usage
+    rootdir = 'C:\\Users\\Jeftha\\Downloads\\DOI'
+    key = '0008|103e'  # Description tagname
+    value = 'ADC'
+    
+    file = 'C:\\Users\\Jeftha\\Downloads\\ProstateX-TrainingLesionInformationv2' \
+           '\\ProstateX-TrainingLesionInformationv2\\ProstateX-Images-Train.csv'
 
-# Example usage
-rootdir = 'C:\Users\Jeftha\Downloads\DOI'
-key = '0008|103e'  # Description tagname
-value = 'ADC'
+    images = find_dicom_series(rootdir, key, value)
+    print(len(images))
 
-file = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
-       '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train.csv'
+    centroids = get_adc_centroids_from_csv(file)
+    print(len(centroids))
 
-images = find_dicom_series(rootdir, key, value)
-print(len(images))
-centroids = get_adc_centroids_from_csv(file)
-print(len(centroids))
-lesions = get_lesions_from_imgs(centroids, images, None, 20, 'ADC')
-print(len(lesions))
+    lesions = get_lesions_from_imgs(centroids, images, None, 20, 'ADC')
+    print(len(lesions))
 
-# Plot one lesion
-plt.imshow(lesions['ProstateX-0000'][0], cmap='gray')
-plt.show()
+    # Plot one lesion
+    plt.imshow(lesions['ProstateX-0000'][0], cmap='gray')
+    plt.show()
