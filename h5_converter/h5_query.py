@@ -3,7 +3,7 @@ import h5py
 """Script that contains functionality to query our HDF5 dataset, using list comprehensions"""
 
 
-def dicom_series_query(h5_file, query_words=('ADC', 'cor')):
+def dicom_series_query(h5_file, query_words):
     """Returns a list of HDF5 groups of DICOM series that match words in query_words."""
     query_result = [
         h5_file[patient_id][dcm_series]  # We want patients with DICOM series such that:
@@ -15,8 +15,8 @@ def dicom_series_query(h5_file, query_words=('ADC', 'cor')):
     return query_result
 
 
-def get_lesion_info(h5_file):
-    query = dicom_series_query(h5_file)
+def get_lesion_info(h5_file, query_words):
+    query = dicom_series_query(h5_file, query_words)
 
     # list of attributes to include in the lesion info
     include_attrs = ['ijk', 'VoxelSpacing', 'ClinSig']
