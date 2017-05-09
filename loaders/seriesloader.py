@@ -16,7 +16,6 @@ def check_scan_metadata(scan_directory, expected_metadata):
     return True
     
     
-
 def find_dicom_series_paths(root_dir, expected_metadata):
     series_paths = []
 
