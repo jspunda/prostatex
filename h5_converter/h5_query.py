@@ -15,8 +15,8 @@ def dicom_series_query(h5_file, query_words):
     return query_result
 
 
-def get_lesion_info(h5_file):
-    query = dicom_series_query(h5_file, ['ADC'])
+def get_lesion_info(h5_file, query_words):
+    query = dicom_series_query(h5_file, query_words)
 
     lesions_info = []
     for h5_group in query:

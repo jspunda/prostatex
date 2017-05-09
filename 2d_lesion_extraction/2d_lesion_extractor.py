@@ -1,7 +1,7 @@
 import math
 import h5py
 from h5_query import get_lesion_info
-
+from matplotlib import pyplot as plt
 
 class Centroid:
     def __init__(self, x, y, z):
@@ -39,15 +39,15 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file):
-    lesion_info = get_lesion_info(h5_file)
+def get_train_data(h5_file, query_words):
+    lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
     y = []
     for infos, image in lesion_info:
         for lesion in infos:
             centroid = parse_centroid(lesion['ijk'])
-            lesion_img = extract_lesion_2d(image, centroid, size=10)
+            lesion_img = extract_lesion_2d(image, centroid, size=16)
 
             if lesion_img is None:
                 continue
@@ -61,4 +61,9 @@ if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
-    X, y = get_train_data(h5_file)
+    X, y = get_train_data(h5_file, ['ADC'])
+
+    print(y[0])
+    plt.imshow(X[0], cmap='gray')
+    plt.show()
+
