@@ -41,21 +41,27 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-if __name__ == "__main__":
-    """ Example usage: """
-    h5_file = h5py.File('C:\\Users\\kbasten\\Downloads\\prostatex-train.hdf5', 'r')
+def get_train_data(h5_file):
     lesion_info = get_lesion_info(h5_file)
 
+    X = []
+    y = []
     for infos, image in lesion_info:
         for lesion in infos:
             centroid = parse_centroid(lesion['ijk'])
-            lesion_img = extract_lesion_2d(image, centroid, size=40)
+            lesion_img = extract_lesion_2d(image, centroid, size=10)
 
             if lesion_img is None:
                 continue
 
-            print(lesion['name'])
-            pyplot.imshow(lesion_img, cmap='gray')
-            pyplot.show()
+            X.append(lesion_img)
+            y.append(lesion['ClinSig'])
 
-            sys.exit(0)
+    return X, y
+
+
+if __name__ == "__main__":
+    """ Example usage: """
+    h5_file = h5py.File('C:\\Users\\kbasten\\Downloads\\prostatex-train.hdf5', 'r')
+
+    X, y = get_train_data(h5_file)
