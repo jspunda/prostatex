@@ -3,7 +3,7 @@ import h5py
 """Script that contains functionality to query our HDF5 dataset, using list comprehensions"""
 
 
-def dicom_series_query(h5_file, query_words):
+def dicom_series_query(h5_file, query_words=('ADC', 'cor')):
     """Returns a list of HDF5 groups of DICOM series that match words in query_words."""
     query_result = [
         h5_file[patient_id][dcm_series]  # We want patients with DICOM series such that:
@@ -15,35 +15,10 @@ def dicom_series_query(h5_file, query_words):
     return query_result
 
 
-if __name__ == '__main__':
-    """Example usage"""
-    # Some basic examples using list comprehension on our HDF5 set:
+def get_lesion_info(h5_file):
+    query = dicom_series_query(h5_file)
 
-    h5 = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
-
-    # Selecting all patients
-    patients = [h5[patient_id] for patient_id in h5.keys()]
-    print(len(patients))
-
-    # Selecting all DICOM series
-    # Note that this would take quite some time using our old approach
-    # Now it's almost instant
-    series = [h5[patient_id][dcm_series]
-              for patient_id in h5.keys()
-              for dcm_series in h5[patient_id].keys()]
-    print(len(series))
-
-    # Selecting all 'ADC' DICOM series
-    adc_series = [h5[patient_id][dcm_series]
-                  for patient_id in h5.keys()
-                  for dcm_series in h5[patient_id].keys()
-                  if 'ADC' in dcm_series]
-    print(len(adc_series))
-
-    # Example of how to extract info from a dicom_series_query result
-    words = ['ADC', 'cor']
-    query = dicom_series_query(h5, words)
-
+    lesions_info = []
     for h5_group in query:
         pixel_array = h5_group['pixel_array'][:]  # The actual DICOM pixel data
         # patient_age = h5_group['pixel_array'].attrs.get('Age')
@@ -56,4 +31,36 @@ if __name__ == '__main__':
             ]
             for finding_id in h5_group['lesions'].keys()
             ]
+        lesions_info.append([lesion_info, pixel_array])
+
+    return lesions_info
+
+
+if __name__ == '__main__':
+    """Example usage"""
+    # Some basic examples using list comprehension on our HDF5 set:
+
+    h5_file = h5py.File('C:\\Users\\kbasten\\Downloads\\prostatex-train.hdf5', 'r')
+
+    # Selecting all patients
+    patients = [h5_file[patient_id] for patient_id in h5_file.keys()]
+    print(len(patients))
+
+    # Selecting all DICOM series
+    # Note that this would take quite some time using our old approach
+    # Now it's almost instant
+    series = [h5_file[patient_id][dcm_series]
+              for patient_id in h5_file.keys()
+              for dcm_series in h5_file[patient_id].keys()]
+    print(len(series))
+
+    # Selecting all 'ADC' DICOM series
+    adc_series = [h5_file[patient_id][dcm_series]
+                  for patient_id in h5_file.keys()
+                  for dcm_series in h5_file[patient_id].keys()
+                  if 'ADC' in dcm_series]
+    print(len(adc_series))
+
+    lesions_info = get_lesion_info(h5_file)
+    for pixel_array, lesion_info in lesions_info:
         print('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))
