@@ -1,8 +1,6 @@
 import math
 import h5py
-from h5_converter.h5_query import get_lesion_info
-from matplotlib import pyplot
-import sys
+from h5_query import get_lesion_info
 
 
 class Centroid:
@@ -55,13 +53,12 @@ def get_train_data(h5_file):
                 continue
 
             X.append(lesion_img)
-            y.append(lesion['ClinSig'])
+            y.append(lesion['ClinSig'] == "TRUE")
 
     return X, y
 
-
 if __name__ == "__main__":
     """ Example usage: """
-    h5_file = h5py.File('C:\\Users\\kbasten\\Downloads\\prostatex-train.hdf5', 'r')
+    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
     X, y = get_train_data(h5_file)
