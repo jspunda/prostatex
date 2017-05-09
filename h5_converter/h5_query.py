@@ -18,20 +18,22 @@ def dicom_series_query(h5_file, query_words=('ADC', 'cor')):
 def get_lesion_info(h5_file):
     query = dicom_series_query(h5_file)
 
+    # list of attributes to include in the lesion info
+    include_attrs = ['ijk', 'VoxelSpacing', 'ClinSig']
+
     lesions_info = []
     for h5_group in query:
         pixel_array = h5_group['pixel_array'][:]  # The actual DICOM pixel data
         # patient_age = h5_group['pixel_array'].attrs.get('Age')
-        lesion_info = [
-            {
+
+        lesion_info = []
+        for finding_id in h5_group['lesions'].keys():
+            lesion_dict = {'name': h5_group.name}
+            for attr in include_attrs:
                 # Per lesion finding, gather the attributes necessary for actual lesion extraction from DICOM image
-                'ijk': h5_group['lesions'][finding_id].attrs.get('ijk'),
-                'VoxelSpacing': h5_group['lesions'][finding_id].attrs.get('VoxelSpacing'),
-                'ClinSig': h5_group['lesions'][finding_id].attrs.get('ClinSig'),
-                'name': h5_group.name
-            }
-            for finding_id in h5_group['lesions'].keys()
-            ]
+                lesion_dict[attr] = h5_group['lesions'][finding_id].attrs.get(attr)
+            lesion_info.append(lesion_dict)
+
         lesions_info.append([lesion_info, pixel_array])
 
     return lesions_info
