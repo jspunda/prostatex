@@ -35,7 +35,7 @@ def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype=
 
 
 def parse_centroid(ijk):
-    coordinates = ijk.split(" ")
+    coordinates = ijk.split(b" ")
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
@@ -53,7 +53,7 @@ def get_train_data(h5_file, query_words):
                 continue
 
             X.append(lesion_img)
-            y.append(lesion['ClinSig'] == "TRUE")
+            y.append(lesion['ClinSig'] == b"TRUE")
 
     return X, y
 
