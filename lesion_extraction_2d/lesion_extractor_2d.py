@@ -1,6 +1,6 @@
 import math
 import h5py
-from h5_query import get_lesion_info
+from .h5_query import get_lesion_info
 from matplotlib import pyplot as plt
 
 class Centroid:
