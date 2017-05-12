@@ -10,9 +10,12 @@ X, y = get_train_data(h5_file, ['ADC'])
 
 X = np.asarray(X)
 X = np.reshape(X, (X.shape[0], X.shape[1] * X.shape[2]))
+y = np.asarray(y)
 
+skf = StratifiedKFold(n_splits=10)
 
-skf = StratifiedKFold(n_splits=3)
+cumulative_acc = 0
+i = 0
 for train, test in skf.split(X, y):
     clf = svm.SVC()
     clf.fit(X[train], y[train])
@@ -26,4 +29,11 @@ for train, test in skf.split(X, y):
         if y[test][i] == predictions[i]:
             correct += 1
 
-    print("Correct: %d , aantal: %d" % (correct, len(X[test])))
+    acc = (correct / len(X[test])) * 100
+    print("Correct: %d%% , aantal: %d" % (acc, len(X[test])))
+
+    cumulative_acc += acc
+
+    i += 1
+
+print("Avg acc: %d" % (cumulative_acc / i))
