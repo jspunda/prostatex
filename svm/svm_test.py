@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 from sklearn import svm
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 
 
@@ -18,11 +19,11 @@ clf.fit(X_train, y_train)
 
 correct = 0
 
-for i in range(len(X_test)):
-    prediction = clf.predict(X_test[i])
-    print("Prediction for %s: %s Actual: %s" % ((i + 1), prediction, y_test[i]))
+predictions = clf.predict(X_test)
+for i in range(len(predictions)):
+    print("Prediction for %s: %s Actual: %s" % ((i + 1), predictions[i], y_test[i]))
 
-    if y_test[i] == prediction:
+    if y_test[i] == predictions[i]:
         correct += 1
 
 print("Correct: %d , aantal: %d" % (correct, len(X_test)))
