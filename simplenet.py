@@ -34,11 +34,14 @@ model.add(BatchNormalization())
 model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
 model.add(BatchNormalization())
 
+model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+model.add(BatchNormalization())
+
 model.add(Conv2D(1, (1, 1), activation='sigmoid'))
 model.add(Flatten())
 
 # For a binary classification problem
-sgd = SGD(lr=0.001, momentum=0.9)
+sgd = SGD(lr=0.0005, momentum=0.9)
 model.compile(optimizer=sgd,
               loss='binary_crossentropy',
               metrics=['accuracy'])
@@ -61,12 +64,12 @@ generator = ImageDataGenerator(featurewise_center=False,
     samplewise_center=False,
     featurewise_std_normalization=False,
     samplewise_std_normalization=False,
-    rotation_range=0,
-    width_shift_range=0.0,
-    height_shift_range=0.0,
-    shear_range=0.0,
-    zoom_range=0.0,
-    channel_shift_range=0.0,
+    rotation_range=20,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.1,
+    zoom_range=0.2,
+    channel_shift_range=100.0,
     fill_mode='nearest',
     horizontal_flip=True,
     vertical_flip=True)
@@ -77,6 +80,6 @@ steps_per_epoch = len(train_labels_list)//batch_size
 
 auc_history = AucHistory(train_data, train_labels, val_data, val_labels)
 
-model.fit_generator(train_generator, steps_per_epoch, epochs=100, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
+model.fit_generator(train_generator, steps_per_epoch, epochs=500, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
 
 
