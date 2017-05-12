@@ -6,8 +6,11 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.core import Flatten
 from keras.layers.normalization import BatchNormalization
+from keras.layers.advanced_activations import LeakyReLU
 from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
+from keras.initializers import RandomNormal
+
 from sklearn.cross_validation import train_test_split
 import matplotlib
 matplotlib.use('Agg')
@@ -18,24 +21,24 @@ from callbacks.auc_callback import AucHistory
 
 ## Model
 model = Sequential()
-model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(16, 16, 1)))
+model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(64, (2, 2), activation='relu'))
+model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(64, (2, 2), activation='relu'))
+model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
 model.add(BatchNormalization())
-model.add(Conv2D(64, (2, 2), activation='relu'))
+model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
 model.add(BatchNormalization())
 
-model.add(Conv2D(1, (1, 1), activation='softmax'))
+model.add(Conv2D(1, (1, 1), activation='sigmoid'))
 model.add(Flatten())
 
 # For a binary classification problem
-sgd = SGD(lr=0.01, momentum=0.9)
+sgd = SGD(lr=0.001, momentum=0.9)
 model.compile(optimizer=sgd,
               loss='binary_crossentropy',
               metrics=['accuracy'])
@@ -74,6 +77,6 @@ steps_per_epoch = len(train_labels_list)//batch_size
 
 auc_history = AucHistory(train_data, train_labels, val_data, val_labels)
 
-model.fit_generator(train_generator, steps_per_epoch, epochs=1000, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
+model.fit_generator(train_generator, steps_per_epoch, epochs=100, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
 
 
