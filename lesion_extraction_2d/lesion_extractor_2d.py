@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import h5py
 from h5_query import get_lesion_info
 from matplotlib import pyplot as plt
@@ -59,7 +60,7 @@ def get_train_data(h5_file, query_words, keep_lesion_data=False, size_px=16):
             else:
                 y.append(lesion['ClinSig'] == b"TRUE")
 
-    return X, y
+    return np.asarray(X), np.asarray(y)
 
 if __name__ == "__main__":
     """ Example usage: """
