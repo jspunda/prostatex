@@ -19,13 +19,12 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
     :param references: Bigger reference image for the lesion cutout
     :param lesion_info: Lesion attributes (fid, zone, clinsig, etc.)
     :param save: Indicates whether plots should be shown on screen or saved to disk
-    :param window: Min and max window values when plotting images, such that every pixel < min becomes min and 
-    every pixel > max becomes max
+    :param window: Min and max window values when plotting images
 
     Note: For ADC images, saving all plots (334 in total) takes a few minutes.
     """
     # Flatten image for histogram plot
-    lesions = np.asarray(lesions)
+    # lesions = np.asarray(lesions)
     lesions_flat = np.reshape(lesions, (lesions.shape[0], lesions.shape[1] * lesions.shape[2]))
 
     # Check for output directories
@@ -80,10 +79,69 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
             print('Showing plot {} of {}'.format(i + 1, lesions_flat.shape[0]))
             plt.show()
 
+
+def get_pixels_in_window(np_array, window):
+    pixels = np_array[(window[0] < np_array) & (np_array < window[1])]
+    if len(pixels) != 0:  # If no pixels within window remain (i.e. lesion does not show up with current window)
+        return pixels
+    else:
+        return None
+
+
+def plot_size_vs_value(lesions, window, marker='o'):
+    """
+    Returns a plot for the actual lesion size vs. the lowest value within the window
+
+    The actual lesion size is defined as the amount of pixels in the cutout for which window[min] < pixel < window[max].
+    This helps get rid of black 'background' and other irrelevant values.
+    However, for tight windows, this can leave zero pixels. These lesions are then dismissed.
+    """
+    # Gather relevant lesion pixels (i.e. pixels in lesion that fall within the window)
+    pixels_inside = []
+    for lesion in lesions:
+        pixels = get_pixels_in_window(lesion, window)
+        if pixels is not None:
+            pixels_inside.append(pixels)
+
+    # Gather lowest values in lesions
+    min_lesion_value = [lesion_pixels.min() for lesion_pixels in pixels_inside]
+
+    # Gather lesion sizes
+    lesion_sizes = [len(lesion_pixels) for lesion_pixels in pixels_inside]
+
+    plt.xlabel('Min. lesion value')
+    plt.ylabel('Lesion size in px')
+    return plt.scatter(min_lesion_value, lesion_sizes, marker=marker)
+
+
+def size_vs_value_comparison(lesions, labels, window):
+    """
+    Gets size_vs_value plots for true and false lesions separately and plots them together in one figure, 
+    in order to visualize potential clusters within our data.
+    """
+    lesions_true = lesions[np.where(labels)[0]]  # Gather all true lesions
+    lesions_false = lesions[np.where(labels == False)[0]]  # Gather all false lesions
+
+    false = plot_size_vs_value(lesions_false, window)
+    true = plot_size_vs_value(lesions_true, window, marker='x')
+
+    plt.legend((false, true), ('False', 'True'))
+    plt.title('Minimal lesion value vs. actual lesion size\n(Lesion cutout size: {}x{}, window: {}-{})'.
+              format(lesions[0].shape[0], lesions[0].shape[0], window[0], window[1]))
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
-    query_words = ['ADC']
-    X, y = get_train_data(h5_file, query_words, keep_lesion_data=True, size_px=6)
+    query_words = ['_ADC']
+    X, y_labels = get_train_data(h5_file, query_words, size_px=8)
     X_big, y = get_train_data(h5_file, query_words, keep_lesion_data=True, size_px=40)
-    visualize_lesions(X, X_big, y, save=False, window=(300, 800))
+
+    # Lesions often show up between these two values.
+    # Effects of different windows values can be checked using visualize_lesions with a window
+    ADC_window = (300, 1200)
+
+    size_vs_value_comparison(X, y_labels, ADC_window)
+    visualize_lesions(X, X_big, y, save=False, window=ADC_window)
