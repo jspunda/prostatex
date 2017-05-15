@@ -1,8 +1,10 @@
 from sklearn.metrics import roc_curve, auc
 import keras
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 
 """
 The right thing to do is to run predictions on all 
@@ -26,14 +28,22 @@ class AucHistory(keras.callbacks.Callback):
     def on_train_end(self, logs):
         #create image of the results
         plt.figure()
-        plt.plot(range(len(self.auc_scores_train)), self.auc_scores_train, label='training auc')
-        plt.plot(range(len(self.auc_scores_validation)), self.auc_scores_validation, label='validation auc')
+        fig, ax = plt.subplots()
+        
+        ax.plot(range(len(self.auc_scores_train)), self.auc_scores_train, label='training auc')
+        ax.plot(range(len(self.auc_scores_validation)), self.auc_scores_validation, label='validation auc')
         plt.ylim([0.0, 1.05])
         
         #grey horizontal lines to make changes more clear
         plt.minorticks_on()
-        plt.grid(b=True, which='major', axis='y', color='0.70')
-        plt.grid(b=True, which='minor', axis='y', color='0.80')
+        plt.grid(b=True, which='major', axis='y', color='0.60', linestyle='solid')
+        plt.grid(b=True, which='minor', axis='y', color='0.80', linestyle='solid')
+        
+        # Set ticks for y axis
+        locator = MultipleLocator(0.1)
+        minor_locator = AutoMinorLocator(5)
+        ax.yaxis.set_major_locator(locator)
+        ax.yaxis.set_minor_locator(minor_locator)
         
         # show vertical line for the best epoch
         best_epoch_number = self.auc_scores_validation.index(max(self.auc_scores_validation))
@@ -42,9 +52,9 @@ class AucHistory(keras.callbacks.Callback):
         plt.xlabel('Epoch')
         plt.ylabel('AUC')
         plt.title('Areas under the receiver operating characteristic curves')
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.legend(loc='center left', bbox_to_anchor=(0.1, 0.2))
         
-        plt.savefig('auc_scores')
+        plt.savefig('auc_scores', dpi='figure')
     
     def on_epoch_end(self, epoch, logs):
         train_predictions = self.model.predict(self.train_data)
