@@ -29,10 +29,20 @@ class AucHistory(keras.callbacks.Callback):
         plt.plot(range(len(self.auc_scores_train)), self.auc_scores_train, label='training auc')
         plt.plot(range(len(self.auc_scores_validation)), self.auc_scores_validation, label='validation auc')
         plt.ylim([0.0, 1.05])
+        
+        #grey horizontal lines to make changes more clear
+        plt.minorticks_on()
+        plt.grid(b=True, which='major', axis='y', color='0.70')
+        plt.grid(b=True, which='minor', axis='y', color='0.80')
+        
+        # show vertical line for the best epoch
+        best_epoch_number = self.auc_scores_validation.index(max(self.auc_scores_validation))
+        plt.axvline(x=best_epoch_number)
+        
         plt.xlabel('Epoch')
         plt.ylabel('AUC')
         plt.title('Areas under the receiver operating characteristic curves')
-        plt.legend()
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         
         plt.savefig('auc_scores')
     
