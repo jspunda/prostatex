@@ -11,6 +11,11 @@ def get_generator(configuration='DEFAULT'):
     
     settings = config[configuration]
     
+    print("loading ImageDataGenerator with configuration:", configuration, 
+          ", with the following settings.")
+    for key in settings:
+        print(key, settings[key], sep=":") 
+    
     generator = ImageDataGenerator(featurewise_center=settings.getboolean('featurewise_center'),
     samplewise_center=settings.getboolean('samplewise_center'),
     featurewise_std_normalization=settings.getboolean('featurewise_std_normalization'),
