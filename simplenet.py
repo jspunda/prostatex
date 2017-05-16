@@ -59,7 +59,7 @@ for index, label in enumerate(train_labels_list):
 train_data, val_data, train_labels, val_labels = train_test_split(data, labels, test_size=0.33, random_state=42, stratify=labels)
 
 ## Stuff for training
-generator = get_generator(configuration='much')
+generator = get_generator(configuration='baseline')
 
 train_generator = generator.flow(train_data, train_labels)#, save_to_dir="/nfs/home4/schellev/augmented_images")
 batch_size = 128
@@ -67,6 +67,6 @@ steps_per_epoch = len(train_labels_list)//batch_size
 
 auc_history = AucHistory(train_data, train_labels, val_data, val_labels)
 
-model.fit_generator(train_generator, steps_per_epoch, epochs=500, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
+model.fit_generator(train_generator, steps_per_epoch, epochs=1000, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
 
 
