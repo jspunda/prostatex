@@ -54,7 +54,7 @@ class AucHistory(keras.callbacks.Callback):
         plt.title('Areas under the receiver operating characteristic curves')
         plt.legend(loc='center left', bbox_to_anchor=(0.1, 0.2))
         
-        plt.savefig('auc_scores', dpi='figure')
+        plt.savefig('auc_scores.svg', dpi='figure')
     
     def on_epoch_end(self, epoch, logs):
         train_predictions = self.model.predict(self.train_data)
