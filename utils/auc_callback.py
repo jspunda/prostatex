@@ -20,6 +20,7 @@ class AucHistory(keras.callbacks.Callback):
         self.train_labels = train_labels
         self.validation_data = validation_data
         self.validation_labels = validation_labels
+        self.epoch_count = 0
     
     def on_train_begin(self, logs):
         self.auc_scores_train = []
@@ -57,10 +58,13 @@ class AucHistory(keras.callbacks.Callback):
         plt.savefig('auc_scores.svg', dpi='figure')
     
     def on_epoch_end(self, epoch, logs):
-        train_predictions = self.model.predict(self.train_data)
-        val_predictions = self.model.predict(self.validation_data)
-        self.auc_scores_train.append(self.compute_auc(self.train_labels, train_predictions))
-        self.auc_scores_validation.append(self.compute_auc(self.validation_labels, val_predictions))
+        self.epoch_count += 1
+        
+        if self.epoch_count % 2 == 0:
+            train_predictions = self.model.predict(self.train_data)
+            val_predictions = self.model.predict(self.validation_data)
+            self.auc_scores_train.append(self.compute_auc(self.train_labels, train_predictions))
+            self.auc_scores_validation.append(self.compute_auc(self.validation_labels, val_predictions))
         
     def compute_auc(self, y_true, y_score):
         fpr, tpr, _ = roc_curve(y_true, y_score)
