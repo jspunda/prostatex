@@ -62,6 +62,7 @@ class AucHistory(keras.callbacks.Callback):
         plt.legend(loc='center left', bbox_to_anchor=(0.1, 0.2))
         
         plt.savefig('auc_scores.svg', dpi='figure')
+        plt.savefig('auc_scores', dpi='figure')
     
     def on_epoch_end(self, epoch, logs):
         if epoch % self.SAVE_TRAIN_INTERVAL == 0:
