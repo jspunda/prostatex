@@ -15,12 +15,14 @@ You can do this in a callback.
 """
 
 class AucHistory(keras.callbacks.Callback):
+    SAVE_TRAIN_INTERVAL=10
+    SAVE_VALIDATION_INTERVAL= 3
+    
     def __init__(self, train_data, train_labels, validation_data, validation_labels):
         self.train_data = train_data
         self.train_labels = train_labels
         self.validation_data = validation_data
         self.validation_labels = validation_labels
-        self.epoch_count = 0
     
     def on_train_begin(self, logs):
         self.auc_scores_train = []
@@ -31,9 +33,17 @@ class AucHistory(keras.callbacks.Callback):
         plt.figure()
         fig, ax = plt.subplots()
         
-        ax.plot(range(len(self.auc_scores_train)), self.auc_scores_train, label='training auc')
-        ax.plot(range(len(self.auc_scores_validation)), self.auc_scores_validation, label='validation auc')
+        train_epochs, train_aucs = zip(*self.auc_scores_train)
+        ax.plot(train_epochs, train_aucs, label='training auc')
+        
+        val_epochs, val_aucs = zip(*self.auc_scores_validation)
+        ax.plot(val_epochs, val_aucs, label='validation auc')
+        
         plt.ylim([0.0, 1.05])
+        
+        # show vertical line for the best epoch
+        best_epoch_number = val_epochs[val_aucs.index(max(val_aucs))]
+        plt.axvline(x=best_epoch_number)
         
         #grey horizontal lines to make changes more clear
         plt.minorticks_on()
@@ -46,10 +56,6 @@ class AucHistory(keras.callbacks.Callback):
         ax.yaxis.set_major_locator(locator)
         ax.yaxis.set_minor_locator(minor_locator)
         
-        # show vertical line for the best epoch
-        best_epoch_number = self.auc_scores_validation.index(max(self.auc_scores_validation))
-        plt.axvline(x=best_epoch_number)
-        
         plt.xlabel('Epoch')
         plt.ylabel('AUC')
         plt.title('Areas under the receiver operating characteristic curves')
@@ -58,13 +64,15 @@ class AucHistory(keras.callbacks.Callback):
         plt.savefig('auc_scores.svg', dpi='figure')
     
     def on_epoch_end(self, epoch, logs):
-        self.epoch_count += 1
-        
-        if self.epoch_count % 2 == 0:
+        if epoch % self.SAVE_TRAIN_INTERVAL == 0:
             train_predictions = self.model.predict(self.train_data)
+            auc = self.compute_auc(self.train_labels, train_predictions)
+            self.auc_scores_train.append((epoch, auc))
+            
+        if epoch % self.SAVE_VALIDATION_INTERVAL == 0:
             val_predictions = self.model.predict(self.validation_data)
-            self.auc_scores_train.append(self.compute_auc(self.train_labels, train_predictions))
-            self.auc_scores_validation.append(self.compute_auc(self.validation_labels, val_predictions))
+            auc = self.compute_auc(self.validation_labels, val_predictions)
+            self.auc_scores_validation.append((epoch, auc))
         
     def compute_auc(self, y_true, y_score):
         fpr, tpr, _ = roc_curve(y_true, y_score)
