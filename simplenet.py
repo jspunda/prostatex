@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import h5py
 import numpy as np
+import os
 
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
@@ -47,7 +48,8 @@ model.compile(optimizer=sgd,
               loss='binary_crossentropy',
               metrics=['accuracy'])
 ## Data
-h5_file = h5py.File('prostatex-train.hdf5', 'r')
+h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex','prostatex-train.hdf5')
+h5_file = h5py.File(h5_file_location, 'r')
 train_data_list, train_labels_list = get_train_data(h5_file, ['ADC'])
 
 data = np.zeros((len(train_data_list),16,16,1), dtype=np.float32)
