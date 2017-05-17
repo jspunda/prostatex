@@ -41,11 +41,12 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file, query_words, keep_lesion_data=False, size_px=16):
+def get_train_data(h5_file, query_words, size_px=16):
     lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
     y = []
+    lesion_attributes = []
     for infos, image in lesion_info:
         for lesion in infos:
 
@@ -55,19 +56,20 @@ def get_train_data(h5_file, query_words, keep_lesion_data=False, size_px=16):
                 continue
 
             X.append(lesion_img)
-            if keep_lesion_data:
-                y.append(lesion)
-            else:
-                y.append(lesion['ClinSig'] == b"TRUE")
 
-    return np.asarray(X), np.asarray(y)
+            lesion_attributes.append(lesion)
+
+            y.append(lesion['ClinSig'] == b"TRUE")
+
+    return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
 if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
-    X, y = get_train_data(h5_file, ['ADC'])
+    X, y, attr = get_train_data(h5_file, ['ADC'])
 
     print(y[0])
+    print(attr[0])
     plt.imshow(X[0], cmap='gray')
     plt.show()
