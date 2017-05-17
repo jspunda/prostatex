@@ -61,6 +61,7 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
         ax2.set_title('Reference image')
 
         # Create histogram for lesion cutout
+        # bins = [x * 10 for x in range(0, 60)]
         n, b, p = ax3.hist(lesions_flat[i])
         ax3.set_title('Pixel value histogram')
         ax3.set_xlabel('Pixel value')
@@ -104,14 +105,14 @@ def plot_size_vs_value(lesions, window, marker='o'):
             pixels_inside.append(pixels)
 
     # Gather lowest values in lesions
-    min_lesion_value = [lesion_pixels.min() for lesion_pixels in pixels_inside]
+    mean_lesion_value = [lesion_pixels.mean() for lesion_pixels in pixels_inside]
 
     # Gather lesion sizes
     lesion_sizes = [len(lesion_pixels) for lesion_pixels in pixels_inside]
 
-    plt.xlabel('Min. lesion value')
-    plt.ylabel('Lesion size in px')
-    return plt.scatter(min_lesion_value, lesion_sizes, marker=marker)
+    plt.xlabel('Mean lesion value')
+    plt.ylabel('Pixel count within window')
+    return plt.scatter(mean_lesion_value, lesion_sizes, marker=marker)
 
 
 def size_vs_value_comparison(lesions, labels, window):
@@ -126,7 +127,7 @@ def size_vs_value_comparison(lesions, labels, window):
     true = plot_size_vs_value(lesions_true, window, marker='x')
 
     plt.legend((false, true), ('False', 'True'))
-    plt.title('Minimal lesion value vs. actual lesion size\n(Lesion cutout size: {}x{}, window: {}-{})'.
+    plt.title('Mean lesion value vs. pixel count in window\n(Lesion cutout size: {}x{}, window: {}-{})'.
               format(lesions[0].shape[0], lesions[0].shape[0], window[0], window[1]))
     plt.tight_layout()
     plt.show()
@@ -136,12 +137,12 @@ if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
     query_words = ['_ADC']
-    X, y_labels = get_train_data(h5_file, query_words, size_px=8)
-    X_big, y = get_train_data(h5_file, query_words, keep_lesion_data=True, size_px=40)
+    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=8)
+    X_big, y, attr = get_train_data(h5_file, query_words, size_px=40)
 
     # Lesions often show up between these two values.
     # Effects of different windows values can be checked using visualize_lesions with a window
     ADC_window = (300, 1200)
 
     size_vs_value_comparison(X, y_labels, ADC_window)
-    visualize_lesions(X, X_big, y, save=False, window=ADC_window)
+    visualize_lesions(X, X_big, attr, save=False, window=ADC_window)
