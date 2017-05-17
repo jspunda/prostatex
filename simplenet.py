@@ -18,6 +18,8 @@ from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 from utils.auc_callback import AucHistory
 from utils.generator_from_config import get_generator
 
+AUGMENTATION_CONFIGURATION = 'more_channel_shift'
+
 ## Model
 model = Sequential()
 model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
@@ -59,14 +61,14 @@ for index, label in enumerate(train_labels_list):
 train_data, val_data, train_labels, val_labels = train_test_split(data, labels, test_size=0.33, random_state=42, stratify=labels)
 
 ## Stuff for training
-generator = get_generator(configuration='baseline')
+generator = get_generator(configuration=AUGMENTATION_CONFIGURATION)
 
 train_generator = generator.flow(train_data, train_labels)#, save_to_dir="/nfs/home4/schellev/augmented_images")
 batch_size = 128
 steps_per_epoch = len(train_labels_list)//batch_size
 
-auc_history = AucHistory(train_data, train_labels, val_data, val_labels)
+auc_history = AucHistory(train_data, train_labels, val_data, val_labels, output_graph_name=AUGMENTATION_CONFIGURATION)
 
-model.fit_generator(train_generator, steps_per_epoch, epochs=1000, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
+model.fit_generator(train_generator, steps_per_epoch, epochs=100, verbose=2, callbacks = [auc_history], max_q_size = 50, workers = 8)
 
 

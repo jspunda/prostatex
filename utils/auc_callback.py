@@ -18,11 +18,12 @@ class AucHistory(keras.callbacks.Callback):
     SAVE_TRAIN_INTERVAL=10
     SAVE_VALIDATION_INTERVAL= 3
     
-    def __init__(self, train_data, train_labels, validation_data, validation_labels):
+    def __init__(self, train_data, train_labels, validation_data, validation_labels, output_graph_name ='auc_scores'):
         self.train_data = train_data
         self.train_labels = train_labels
         self.validation_data = validation_data
         self.validation_labels = validation_labels
+        self.output_graph_name = output_graph_name
     
     def on_train_begin(self, logs):
         self.auc_scores_train = []
@@ -61,8 +62,8 @@ class AucHistory(keras.callbacks.Callback):
         plt.title('Areas under the receiver operating characteristic curves')
         plt.legend(loc='center left', bbox_to_anchor=(0.1, 0.2))
         
-        plt.savefig('auc_scores.svg', dpi='figure')
-        plt.savefig('auc_scores', dpi='figure')
+        plt.savefig(self.output_graph_name + '.svg', dpi='figure')
+        plt.savefig(self.output_graph_name, dpi='figure')
     
     def on_epoch_end(self, epoch, logs):
         if epoch % self.SAVE_TRAIN_INTERVAL == 0:
