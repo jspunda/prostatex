@@ -61,19 +61,19 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
         ax2.set_title('Reference image')
 
         # Create histogram for lesion cutout
-        # bins = [x * 10 for x in range(0, 60)]
-        n, b, p = ax3.hist(lesions_flat[i])
+        bins = [x * 100 for x in range(0, 22)]
+        n, b, p = ax3.hist(lesions_flat[i], bins=bins)
         ax3.set_title('Pixel value histogram')
         ax3.set_xlabel('Pixel value')
         ax3.set_ylabel('Pixels')
         plt.sca(ax3)  # Focus just on this ax in subplot
-        plt.xticks(b)  # Set values on x axis in plot to match histogram bin values
+        plt.xticks([0, 400, 700, 1000, 1500, 2000])  # Set values on x axis in plot to match histogram bin values
         plt.tight_layout()  # Fix layout
 
         if save:
             # Save image to disk and clear the figure for next loop
             print('Saving plot {} of {}'.format(i + 1, lesions_flat.shape[0]))
-            plt.savefig('img/{}/{}_{}_fid_{}.png'.format(clinsig, patient_id, dcm_series, fid))
+            plt.savefig('img/{}/{}_{}_fid_{}.pdf'.format(clinsig, patient_id, dcm_series, fid))
             plt.clf()
         else:
             # Just display the plot on screen. Loop is paused until user closes the plot window
