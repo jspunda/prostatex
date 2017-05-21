@@ -5,8 +5,7 @@ from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 
 
 def x_y_shuffle(X, y, attr):
-    indices = np.arange(len(X))
-    np.random.shuffle(indices)
+    indices = np.random.permutation(len(X))
 
     return X[indices], y[indices], attr[indices]
 
