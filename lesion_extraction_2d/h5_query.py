@@ -15,6 +15,10 @@ def dicom_series_query(h5_file, query_words):
     return query_result
 
 
+def filename_to_patient_id(name):
+    return name[11:15]
+
+
 def get_lesion_info(h5_file, query_words):
     query = dicom_series_query(h5_file, query_words)
 
@@ -28,7 +32,10 @@ def get_lesion_info(h5_file, query_words):
 
         lesion_info = []
         for finding_id in h5_group['lesions'].keys():
-            lesion_dict = {'name': h5_group.name}
+            lesion_dict = {
+                'name': h5_group.name,
+                'patient_id': filename_to_patient_id(h5_group.name)
+            }
             for attr in include_attrs:
                 # Per lesion finding, gather the attributes necessary for actual lesion extraction from DICOM image
                 lesion_dict[attr] = h5_group['lesions'][finding_id].attrs.get(attr)
