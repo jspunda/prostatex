@@ -31,8 +31,7 @@ def train_test_split(X, y, attr, **options):
         patient_ids[a] = []
 
     for i in range(len(X)):
-        # patient_id = attr[i]['patient_id']
-        patient_id = attr[i]
+        patient_id = attr[i]['patient_id']
 
         destination = ''
 
