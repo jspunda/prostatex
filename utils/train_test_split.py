@@ -37,12 +37,18 @@ def train_test_split(X, y, attr, **options):
 
         for which, arr in patient_ids.items():
             if patient_id in arr:
+                # this patient already exists in one of the arrays, put this one
+                # there as well
                 destination = which
                 break
 
+        if len(X_out['test']) == 0 and len(X_out['train']) == 0:
+            # first element, put in test to prevent division by zero during ratio calculation
+            destination = 'test'
+
         if destination == '':  # no array for this patient yet
             # try to maintain ratio between test and train
-            if len(X_out['test']) / len(X) < test_size:
+            if len(X_out['test']) / (len(X_out['test']) + len(X_out['train'])) < test_size:
                 destination = 'test'
             else:
                 destination = 'train'
@@ -62,3 +68,5 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X, y, attr, test_size=0.25)
 
     print("Split with ratio: %0.3f" % (len(X_test) / len(X)))
+    print(len(X_test))
+    print(len(X_train))
