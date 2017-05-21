@@ -1,6 +1,7 @@
 import os
 import h5py
 import numpy as np
+import sys
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 
 
@@ -53,10 +54,10 @@ def train_test_split(X, y, attr, **options):
                 destination = 'train'
 
         X_out[destination].append(X[i])
-        y_out[destination].append(X[i])
+        y_out[destination].append(y[i])
         patient_ids[destination].append(patient_id)
 
-    return X_out['train'], X_out['test'], y_out['train'], y_out['test']
+    return np.asarray(X_out['train']), np.asarray(X_out['test']), np.asarray(y_out['train']), np.asarray(y_out['test'])
 
 if __name__ == "__main__":
     """ Example usage """
