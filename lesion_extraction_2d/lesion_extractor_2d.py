@@ -1,6 +1,8 @@
 import math
+import numpy as np
 import h5py
-from .h5_query import get_lesion_info
+from h5_query import get_lesion_info
+
 
 class Centroid:
     def __init__(self, x, y, z):
@@ -38,33 +40,36 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file, query_words):
+def get_train_data(h5_file, query_words, size_px=16):
     lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
     y = []
+    lesion_attributes = []
     for infos, image in lesion_info:
         for lesion in infos:
-            centroid = parse_centroid(lesion['ijk'])
-            lesion_img = extract_lesion_2d(image, centroid, size=16)
 
+            centroid = parse_centroid(lesion['ijk'])
+            lesion_img = extract_lesion_2d(image, centroid, size=size_px)
             if lesion_img is None:
                 continue
 
             X.append(lesion_img)
+
+            lesion_attributes.append(lesion)
+
             y.append(lesion['ClinSig'] == b"TRUE")
 
-    return X, y
+    return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
-    X, y = get_train_data(h5_file, ['ADC'])
+    X, y, attr = get_train_data(h5_file, ['ADC'])
 
     print(y[0])
+    print(attr[0])
     plt.imshow(X[0], cmap='gray')
     plt.show()
-
