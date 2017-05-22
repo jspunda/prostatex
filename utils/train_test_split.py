@@ -11,7 +11,7 @@ def x_y_shuffle(X, y, attr):
     return X[indices], y[indices], attr[indices]
 
 
-def stratify(X, y, ratio):
+def stratify(X, y, attr, skip_patients, ratio):
     current_ratio = stratify_ratio(y['train'])
     diff = current_ratio - ratio
 
@@ -28,22 +28,26 @@ def stratify(X, y, ratio):
             # we ran out of elements to swap...
             break
 
-        if y['train'][i] == direction:
+        if y['train'][i] == direction or attr['train'][i]['patient_id'] in skip_patients:
             i += 1
             continue
 
-        if y['test'][j] != direction:
+        if y['test'][j] != direction or attr['test'][j]['patient_id'] in skip_patients:
             j += 1
             continue
 
         # swap i and j if they are of different label:
         temp_X_test = X['test'][i]
         temp_y_test = y['test'][i]
+        temp_attr_test = attr['test'][i]
 
         X['train'][i] = X['test'][j]
         y['train'][i] = y['test'][j]
+        attr['train'][i] = attr['test'][j]
+
         X['train'][j] = temp_X_test
         y['train'][j] = temp_y_test
+        attr['train'][j] = temp_attr_test
 
         swapped += 1
         i += 1
@@ -53,9 +57,9 @@ def stratify(X, y, ratio):
             break
 
     # print this ratio for confirming the set is now stratified
-    new_ratio = stratify_ratio(y['train'])
+    # new_ratio = stratify_ratio(y['train'])
 
-    return X, y
+    return X, y, attr
 
 
 def stratify_ratio(y):
@@ -75,14 +79,17 @@ def train_test_split(X, y, attr, **options):
 
     X_out = {}
     y_out = {}
+    attr_out = {}
     patient_ids = {}
 
     arrs = ['train', 'test']
     for a in arrs:
         X_out[a] = []
         y_out[a] = []
+        attr_out[a] = []
         patient_ids[a] = []
 
+    patients_occuring_multiple_times = []
     for i in range(len(X)):
         patient_id = attr[i]['patient_id']
 
@@ -93,6 +100,7 @@ def train_test_split(X, y, attr, **options):
                 # this patient already exists in one of the arrays, put this one
                 # there as well
                 destination = which
+                patients_occuring_multiple_times.append(patient_id)
                 break
 
         if len(X_out['test']) == 0 and len(X_out['train']) == 0:
@@ -109,13 +117,14 @@ def train_test_split(X, y, attr, **options):
 
         X_out[destination].append(X[i])
         y_out[destination].append(y[i])
+        attr_out[destination].append(attr[i])
         patient_ids[destination].append(patient_id)
 
     for a in arrs:
         X_out[a] = np.asarray(X_out[a])
         y_out[a] = np.asarray(y_out[a])
 
-    X_out, y_out = stratify(X_out, y_out, ratio=stratify_ratio(y))
+    X_out, y_out, attr_out = stratify(X_out, y_out, attr_out, skip_patients=patients_occuring_multiple_times, ratio=stratify_ratio(y))
 
     return X_out['train'], X_out['test'], y_out['train'], y_out['test']
 
