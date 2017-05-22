@@ -11,6 +11,59 @@ def x_y_shuffle(X, y, attr):
     return X[indices], y[indices], attr[indices]
 
 
+def stratify(X, y, ratio):
+    current_ratio = stratify_ratio(y['train'])
+    diff = current_ratio - ratio
+
+    # number of elements we have to swap:
+    change_elements = int(round(len(y['train']) * diff))
+    direction = change_elements < 0
+    change_elements = abs(change_elements)
+
+    swapped = 0
+    i = 0
+    j = 0
+    while True:
+        if i == len(y['train']) or j == len(y['test']):
+            # we ran out of elements to swap...
+            break
+
+        if y['train'][i] == direction:
+            i += 1
+            continue
+
+        if y['test'][j] != direction:
+            j += 1
+            continue
+
+        # swap i and j if they are of different label:
+        temp_X_test = X['test'][i]
+        temp_y_test = y['test'][i]
+
+        X['train'][i] = X['test'][j]
+        y['train'][i] = y['test'][j]
+        X['train'][j] = temp_X_test
+        y['train'][j] = temp_y_test
+
+        swapped += 1
+        i += 1
+        j += 1
+
+        if swapped >= change_elements:
+            break
+
+    # print this ratio for confirming the set is now stratified
+    new_ratio = stratify_ratio(y['train'])
+
+    return X, y
+
+
+def stratify_ratio(y):
+    c = np.bincount(y)
+
+    return c[1] / len(y)
+
+
 def train_test_split(X, y, attr, **options):
     if len(X) != len(y) or len(X) != len(attr):
         raise ValueError("Array lengths not matching")
@@ -48,7 +101,8 @@ def train_test_split(X, y, attr, **options):
 
         if destination == '':  # no array for this patient yet
             # try to maintain ratio between test and train
-            if len(X_out['test']) / (len(X_out['test']) + len(X_out['train'])) < test_size:
+            ratio = len(X_out['test']) / (len(X_out['test']) + len(X_out['train']))
+            if ratio < test_size:
                 destination = 'test'
             else:
                 destination = 'train'
@@ -57,7 +111,13 @@ def train_test_split(X, y, attr, **options):
         y_out[destination].append(y[i])
         patient_ids[destination].append(patient_id)
 
-    return np.asarray(X_out['train']), np.asarray(X_out['test']), np.asarray(y_out['train']), np.asarray(y_out['test'])
+    for a in arrs:
+        X_out[a] = np.asarray(X_out[a])
+        y_out[a] = np.asarray(y_out[a])
+
+    X_out, y_out = stratify(X_out, y_out, ratio=stratify_ratio(y))
+
+    return X_out['train'], np.asarray(X_out['test']), np.asarray(y_out['train']), np.asarray(y_out['test'])
 
 if __name__ == "__main__":
     """ Example usage """
@@ -66,6 +126,8 @@ if __name__ == "__main__":
     X, y, attr = get_train_data(h5_file, ['ADC'])
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, attr, test_size=0.25)
+
+    print(type(X_train))
 
     print("Split with ratio: %0.3f" % (len(X_test) / len(X)))
     print(len(X_test))

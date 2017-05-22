@@ -49,15 +49,22 @@ h5_file_location = os.path.join('/media/koen/Stack/Stack/uni/Machine Learning in
 h5_file = h5py.File(h5_file_location, 'r')
 train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
 
-data = np.zeros((len(train_data_list), 16, 16, 1), dtype=np.float32)
-labels = np.zeros((len(train_labels_list), 1), dtype=np.float32)
 
-for index, image in enumerate(train_data_list):
-    data[index, :, :, 0] = image
-for index, label in enumerate(train_labels_list):
-    labels[index, 0] = label
+def reshape(input_list):
+    new_shape = list(input_list.shape)
+    new_shape.append(1)
 
-train_data, val_data, train_labels, val_labels = train_test_split(data, labels, attr, test_size=0.33)
+    output_list = np.reshape(input_list, new_shape)
+
+    return output_list.astype(np.float32)
+
+
+train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, attr, test_size=0.33)
+
+train_data = reshape(train_data)
+val_data = reshape(val_data)
+train_labels = reshape(train_labels)
+val_labels = reshape(val_labels)
 
 ## Stuff for training
 generator = get_generator(configuration=AUGMENTATION_CONFIGURATION)
