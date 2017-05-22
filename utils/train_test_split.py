@@ -41,9 +41,9 @@ def stratify(X, y, attr, skip_patients, ratio):
         temp_y_test = y['test'][i]
         temp_attr_test = attr['test'][i]
 
-        X['train'][i] = X['test'][j]
-        y['train'][i] = y['test'][j]
-        attr['train'][i] = attr['test'][j]
+        X['test'][i] = X['train'][j]
+        y['test'][i] = y['train'][j]
+        attr['test'][i] = attr['train'][j]
 
         X['train'][j] = temp_X_test
         y['train'][j] = temp_y_test
