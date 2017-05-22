@@ -117,7 +117,7 @@ def train_test_split(X, y, attr, **options):
 
     X_out, y_out = stratify(X_out, y_out, ratio=stratify_ratio(y))
 
-    return X_out['train'], np.asarray(X_out['test']), np.asarray(y_out['train']), np.asarray(y_out['test'])
+    return X_out['train'], X_out['test'], y_out['train'], y_out['test']
 
 if __name__ == "__main__":
     """ Example usage """
