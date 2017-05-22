@@ -20,42 +20,46 @@ from utils.train_test_split import train_test_split
 AUGMENTATION_CONFIGURATION = 'baseline'
 
 ## Model
-model = Sequential()
-model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
-model.add(BatchNormalization())
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-model.add(BatchNormalization())
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
-model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-model.add(BatchNormalization())
-model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-model.add(BatchNormalization())
-
-model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-model.add(BatchNormalization())
-
-model.add(Conv2D(1, (1, 1), activation='sigmoid'))
-model.add(Flatten())
-
-# For a binary classification problem
-sgd = SGD(lr=0.0005, momentum=0.9)
-model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
+# model = Sequential()
+# model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+# model.add(BatchNormalization())
+# model.add(MaxPooling2D(pool_size=(2, 2)))
+#
+# model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+# model.add(BatchNormalization())
+# model.add(MaxPooling2D(pool_size=(2, 2)))
+#
+# model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+# model.add(BatchNormalization())
+# model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+# model.add(BatchNormalization())
+#
+# model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+# model.add(BatchNormalization())
+#
+# model.add(Conv2D(1, (1, 1), activation='sigmoid'))
+# model.add(Flatten())
+#
+# # For a binary classification problem
+# sgd = SGD(lr=0.0005, momentum=0.9)
+# model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
 ## Data
 h5_file_location = os.path.join('/media/koen/Stack/Stack/uni/Machine Learning in Practice', 'prostatex-train.hdf5')
 h5_file = h5py.File(h5_file_location, 'r')
 train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
 
-data = np.zeros((len(train_data_list), 16, 16, 1), dtype=np.float32)
-labels = np.zeros((len(train_labels_list), 1), dtype=np.float32)
 
-for index, image in enumerate(train_data_list):
-    data[index, :, :, 0] = image
-for index, label in enumerate(train_labels_list):
-    labels[index, 0] = label
+def reshape(input_list):
+    new_shape = list(input_list.shape)
+    new_shape.append(1)
+
+    output_list = np.reshape(input_list, new_shape)
+
+    return output_list.astype(np.float32)
+
+data = reshape(train_data_list)
+labels = reshape(train_labels_list)
 
 train_data, val_data, train_labels, val_labels = train_test_split(data, labels, attr, test_size=0.33)
 
