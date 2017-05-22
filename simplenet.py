@@ -20,29 +20,29 @@ from utils.train_test_split import train_test_split
 AUGMENTATION_CONFIGURATION = 'baseline'
 
 ## Model
-# model = Sequential()
-# model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
-# model.add(BatchNormalization())
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-#
-# model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-# model.add(BatchNormalization())
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-#
-# model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-# model.add(BatchNormalization())
-# model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-# model.add(BatchNormalization())
-#
-# model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-# model.add(BatchNormalization())
-#
-# model.add(Conv2D(1, (1, 1), activation='sigmoid'))
-# model.add(Flatten())
-#
-# # For a binary classification problem
-# sgd = SGD(lr=0.0005, momentum=0.9)
-# model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
+model = Sequential()
+model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+model.add(BatchNormalization())
+model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+model.add(BatchNormalization())
+
+model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+model.add(BatchNormalization())
+
+model.add(Conv2D(1, (1, 1), activation='sigmoid'))
+model.add(Flatten())
+
+# For a binary classification problem
+sgd = SGD(lr=0.0005, momentum=0.9)
+model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
 ## Data
 h5_file_location = os.path.join('/media/koen/Stack/Stack/uni/Machine Learning in Practice', 'prostatex-train.hdf5')
@@ -58,10 +58,13 @@ def reshape(input_list):
 
     return output_list.astype(np.float32)
 
-data = reshape(train_data_list)
-labels = reshape(train_labels_list)
 
-train_data, val_data, train_labels, val_labels = train_test_split(data, labels, attr, test_size=0.33)
+train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, attr, test_size=0.33)
+
+train_data = reshape(train_data)
+val_data = reshape(val_data)
+train_labels = reshape(train_labels)
+val_labels = reshape(val_labels)
 
 ## Stuff for training
 generator = get_generator(configuration=AUGMENTATION_CONFIGURATION)
