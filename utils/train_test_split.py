@@ -37,17 +37,17 @@ def stratify(X, y, attr, skip_patients, ratio):
             continue
 
         # swap i and j if they are of different label:
-        temp_X_test = X['test'][i]
-        temp_y_test = y['test'][i]
-        temp_attr_test = attr['test'][i]
+        temp_X_test = X['test'][j]
+        temp_y_test = y['test'][j]
+        temp_attr_test = attr['test'][j]
 
-        X['test'][i] = X['train'][j]
-        y['test'][i] = y['train'][j]
-        attr['test'][i] = attr['train'][j]
+        X['test'][j] = X['train'][i]
+        y['test'][j] = y['train'][i]
+        attr['test'][j] = attr['train'][i]
 
-        X['train'][j] = temp_X_test
-        y['train'][j] = temp_y_test
-        attr['train'][j] = temp_attr_test
+        X['train'][i] = temp_X_test
+        y['train'][i] = temp_y_test
+        attr['train'][i] = temp_attr_test
 
         swapped += 1
         i += 1
@@ -57,7 +57,7 @@ def stratify(X, y, attr, skip_patients, ratio):
             break
 
     # print this ratio for confirming the set is now stratified
-    # new_ratio = stratify_ratio(y['train'])
+    new_ratio = stratify_ratio(y['train'])
 
     return X, y, attr
 
