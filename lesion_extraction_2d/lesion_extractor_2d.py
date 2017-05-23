@@ -1,8 +1,7 @@
 import math
 import numpy as np
 import h5py
-from h5_query import get_lesion_info
-from matplotlib import pyplot as plt
+from .h5_query import get_lesion_info
 
 
 class Centroid:
@@ -64,6 +63,7 @@ def get_train_data(h5_file, query_words, size_px=16):
     return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
 if __name__ == "__main__":
+    from matplotlib import pyplot as plt
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
@@ -73,3 +73,4 @@ if __name__ == "__main__":
     print(attr[0])
     plt.imshow(X[0], cmap='gray')
     plt.show()
+    
