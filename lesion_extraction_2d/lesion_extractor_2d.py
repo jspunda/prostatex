@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import h5py
-from h5_query import get_lesion_info
+from .h5_query import get_lesion_info
 
 
 class Centroid:
@@ -73,3 +73,4 @@ if __name__ == "__main__":
     print(attr[0])
     plt.imshow(X[0], cmap='gray')
     plt.show()
+    

@@ -23,12 +23,12 @@ def get_lesion_info(h5_file, query_words):
     query = dicom_series_query(h5_file, query_words)
 
     # list of attributes to include in the lesion info
-    include_attrs = ['ijk', 'VoxelSpacing', 'ClinSig']
+    include_attrs = ['ijk', 'VoxelSpacing', 'Zone', 'ClinSig']
 
     lesions_info = []
     for h5_group in query:
         pixel_array = h5_group['pixel_array'][:]  # The actual DICOM pixel data
-        # patient_age = h5_group['pixel_array'].attrs.get('Age')
+        patient_age = h5_group['pixel_array'].attrs.get('Age')
 
         lesion_info = []
         for finding_id in h5_group['lesions'].keys():
@@ -39,6 +39,8 @@ def get_lesion_info(h5_file, query_words):
             for attr in include_attrs:
                 # Per lesion finding, gather the attributes necessary for actual lesion extraction from DICOM image
                 lesion_dict[attr] = h5_group['lesions'][finding_id].attrs.get(attr)
+            lesion_dict['fid'] = finding_id
+            lesion_dict['Age'] = patient_age
             lesion_info.append(lesion_dict)
 
         lesions_info.append([lesion_info, pixel_array])
@@ -50,7 +52,7 @@ if __name__ == '__main__':
     """Example usage"""
     # Some basic examples using list comprehension on our HDF5 set:
 
-    h5_file = h5py.File('C:\\Users\\kbasten\\Downloads\\prostatex-train.hdf5', 'r')
+    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
     # Selecting all patients
     patients = [h5_file[patient_id] for patient_id in h5_file.keys()]
@@ -72,5 +74,5 @@ if __name__ == '__main__':
     print(len(adc_series))
 
     lesions_info = get_lesion_info(h5_file, ['ADC'])
-    for pixel_array, lesion_info in lesions_info:
+    for lesion_info, pixel_array in lesions_info:
         print('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))
