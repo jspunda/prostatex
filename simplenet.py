@@ -2,7 +2,6 @@
 import h5py
 import numpy as np
 import os
-import sys
 
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
@@ -45,26 +44,16 @@ sgd = SGD(lr=0.0005, momentum=0.9)
 model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
 ## Data
-h5_file_location = os.path.join('/media/koen/Stack/Stack/uni/Machine Learning in Practice', 'prostatex-train.hdf5')
+h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex', 'prostatex-train.hdf5')
 h5_file = h5py.File(h5_file_location, 'r')
 train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
 
-
-def reshape(input_list):
-    new_shape = list(input_list.shape)
-    new_shape.append(1)
-
-    output_list = np.reshape(input_list, new_shape)
-
-    return output_list.astype(np.float32)
-
-
 train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, attr, test_size=0.33)
 
-train_data = reshape(train_data)
-val_data = reshape(val_data)
-train_labels = reshape(train_labels)
-val_labels = reshape(val_labels)
+train_data = np.expand_dims(train_data, axis=-1)
+val_data = np.expand_dims(val_data, axis=-1)
+train_labels = np.expand_dims(train_labels, axis=-1)
+val_labels = np.expand_dims(val_labels, axis=-1)
 
 ## Stuff for training
 generator = get_generator(configuration=AUGMENTATION_CONFIGURATION)
