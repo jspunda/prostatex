@@ -139,11 +139,21 @@ def train_csv_to_h5(csv_file, h5):
 
 
 if __name__ == "__main__":
-    # Example usage
-    h5file = h5py.File('prostatex-train.hdf5', 'w')
-    dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
-    images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
-                       '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
+    """Example usage: """
+    # Example usage for train set
+    # h5file = h5py.File('prostatex-train.hdf5', 'w')
+    # dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
+    # images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
+    #                    '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
+    #
+    # dicom_to_h5(dcm_folder, h5file)
+    # train_csv_to_h5(images_train_csv, h5file)
+
+    # Example usage for test set
+    h5file = h5py.File('prostatex-test.hdf5', 'w')
+    dcm_folder = 'C:\Users\Jeftha\Downloads\\test_set\DOI'
+    images_test_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TestLesionInformation' \
+                       '\ProstateX-TestLesionInformation\ProstateX-Images-Test-NEW.csv'
 
     dicom_to_h5(dcm_folder, h5file)
-    train_csv_to_h5(images_train_csv, h5file)
+    train_csv_to_h5(images_test_csv, h5file)
