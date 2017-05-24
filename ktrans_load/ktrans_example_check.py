@@ -75,7 +75,7 @@ lesion_dic = get_ktrans_centroids_from_csv(filename)
 '''lesions extraction part'''
 
 ct_lst = []
-for item in lesion_dic:
+for item in sorted(lesion_dic):
     ct = lesion_dic[item][0]
     ct_lst.append(ct)
 
