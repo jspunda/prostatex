@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import h5py
-from .h5_query import get_lesion_info
+from h5_query import get_lesion_info
 
 
 class Centroid:
@@ -46,12 +46,20 @@ def get_train_data(h5_file, query_words, size_px=16):
     X = []
     y = []
     lesion_attributes = []
+    previous_patient = ''
     for infos, image in lesion_info:
+        current_patient = infos[0]['name'].split('/')[1]
+        if current_patient == previous_patient:
+            print('Warning in {}: Found duplicate match for {}. Skipping...'
+                  .format(get_train_data.__name__, current_patient))
+            continue
         for lesion in infos:
 
             centroid = parse_centroid(lesion['ijk'])
             lesion_img = extract_lesion_2d(image, centroid, size=size_px)
             if lesion_img is None:
+                print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
+                      .format(get_train_data.__name__, lesion))
                 continue
 
             X.append(lesion_img)
@@ -59,6 +67,8 @@ def get_train_data(h5_file, query_words, size_px=16):
             lesion_attributes.append(lesion)
 
             y.append(lesion['ClinSig'] == b"TRUE")
+
+        previous_patient = current_patient
 
     return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
@@ -73,4 +83,3 @@ if __name__ == "__main__":
     print(attr[0])
     plt.imshow(X[0], cmap='gray')
     plt.show()
-    

@@ -135,8 +135,8 @@ def size_vs_value_comparison(lesions, labels, window):
 
 if __name__ == "__main__":
     """ Example usage: """
-    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
-    query_words = ['_ADC']
+    h5_file = h5py.File('C:\\Users\\Jeftha\\Downloads\\prostatex-train.hdf5', 'r')
+    query_words = ['ADC']
     X, y_labels, attr = get_train_data(h5_file, query_words, size_px=8)
     X_big, y, attr = get_train_data(h5_file, query_words, size_px=40)
 
