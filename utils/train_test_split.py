@@ -74,10 +74,10 @@ def train_test_split(X, y, attr, **options):
 
     # test size defaults to 0.25
     test_size = options.pop('test_size', 0.25)
-	rand_state = options.pop('random_state', None)
-	
-	if rand_state is not None:
-		np.random.seed(rand_state)
+    rand_state = options.pop('random_state', None)
+
+    if rand_state is not None:
+        np.random.seed(rand_state)
 
     X, y, attr = x_y_shuffle(X, y, attr)
 
