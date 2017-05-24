@@ -83,8 +83,8 @@ def extract_lesion_2d(img, centroid_position, size):
 
     sizecal = size
     x_start = int(centroid_position.x - sizecal / 1.5)
-    x_end = int(centroid_position.y + sizecal / 1.5)
-    y_start = int(centroid_position.x - sizecal / 1.5)
+    x_end = int(centroid_position.x + sizecal / 1.5)
+    y_start = int(centroid_position.y - sizecal / 1.5)
     y_end = int(centroid_position.y + sizecal / 1.5)
 
     # Quick try-except fix for possibly miss-annotated centroid coords (Known cases: ProstateX-0154)
