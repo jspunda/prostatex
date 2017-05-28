@@ -2,6 +2,7 @@ import csv
 import glob
 import SimpleITK as sitk
 import sys
+from manual_csv_changes import manual_fix
 
 
 #orig_stdout = sys.stdout
@@ -118,6 +119,7 @@ with open(ktrans_csv, 'rb') as ktrans:
 
                 new_lst = join_rows(new_rows, ktrans_lst)
 
+new_lst = manual_fix(new_lst)
 
 #for i in new_lst:
 #   print
