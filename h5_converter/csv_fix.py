@@ -1,4 +1,5 @@
 import csv
+from manual_csv_changes import manual_fix
 
 """Script that takes ProstateX-Findings-{Train,Test}.csv and adds per lesion its zone and clinsig 
 (clinsig for train set only) information to the corrects rows in ProstateX-Images-{Train,Test}.csv, 
@@ -20,6 +21,7 @@ images_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TestLesionInformation' \
 
 findings_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TestLesionInformation' \
                 '\ProstateX-TestLesionInformation\ProstateX-Findings-Test.csv'
+
 
 with open(images_csv, 'rb')as images_train:
     with open(findings_csv, 'rb') as findings_train:
@@ -46,6 +48,8 @@ with open(images_csv, 'rb')as images_train:
                         images_row.append('NA')
                     new_rows.append(images_row)
 
+new_rows = manual_fix(new_rows)                    
+                    
 # Write new .csv file
 if train_set:
     output_name = 'ProstateX-Images-Train-NEW.csv'
