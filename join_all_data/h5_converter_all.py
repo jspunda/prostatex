@@ -35,22 +35,39 @@ def dicom_to_h5(root_dir, h5):
         if Im_Ktrans:
             patient_id = series_filename.split(os.sep)[-3]
             patient_age = ages[patient_id]
-            series_number = '0'
-            # Since there's only one ktrans per patient, the name will be unique by just adding 'Ktrans'
-            data_path = patient_id + '/Ktrans' + '_' + series_number
+            series_number = 0
+            series_description = 'Ktrans'
         else:
             patient_id = img.GetMetaData('0010|0020').strip()
             patient_age = img.GetMetaData('0010|1010').strip()
-            series_number = img.GetMetaData('0020|0011').strip()
+            series_number = int(img.GetMetaData('0020|0011').strip())
             series_description = img.GetMetaData('0008|103e').strip()
-            # Combine series description and series number to create a unique identifier for this DICOM series.
-            # Should be unique for each patient. Only exception is ProstateX-0025, hence the try: except: approach.
-            data_path = patient_id + '/' + series_description + '_' + series_number
 
             # Add the age info in the dictionary for Ktrans
             ages[patient_id] = patient_age
-        try:
-            print(patient_id)
+
+
+        # Combine series description and series number to create a unique identifier for this DICOM series.
+        # Should be unique for each patient. Only exception is ProstateX-0025, hence the try: except: approach.
+        data_path = patient_id + '/' + series_description #+ '_' + series_number
+        print('Converting: {}'.format(data_path))
+
+        # If we find a DICOM series that already exists, we check if the series number is higher. If so, remove
+        # series that is already present and add this one.
+        create = False
+
+        if data_path in h5:
+            if h5[data_path]['pixel_array'].attrs.get('SeriesNr') < series_number:
+                del h5[data_path]
+                print('New series has higher series number, so adding.')
+                create = True
+            else:
+                print('New series has lower series number, so not adding.')
+        else:
+            create = True
+
+        if create:
+            #print(patient_id)
             group = h5.create_group(data_path)
             if Im_Ktrans:
                 data = sitk.GetArrayFromImage(img)
@@ -59,8 +76,6 @@ def dicom_to_h5(root_dir, h5):
                 pixeldata = group.create_dataset('pixel_array', data=load_dicom_series(directory))
             pixeldata.attrs.create('Age', patient_age)
             pixeldata.attrs.create('SeriesNr', series_number)
-        except ValueError:
-            print('Skipping duplicate {}'.format(data_path))
 
 
 def train_csv_to_h5(csv_file, h5):
@@ -84,9 +99,14 @@ def train_csv_to_h5(csv_file, h5):
             clin_sig = row[13]
 
             # csv file contains redundant information. For example row 4 and 5 add no more information when
-            # row 3 has already been seen. Hence the try: except: approach.
-            pathname = patient_id + '/' + dcm_descr + '_' + dcm_sernum + '/lesions/' + finding_id
-            try:
+            # row 3 has already been seen.
+            #pathname = patient_id + '/' + dcm_descr + '_' + dcm_sernum + '/lesions/' + finding_id
+            pathname = patient_id + '/' + dcm_descr + '/lesions/' + finding_id
+
+            if pathname in h5:
+                print('Skipping duplicate {}'.format(pathname))
+                continue
+            else:
                 group = h5.create_group(pathname)
                 group.attrs.create('Name', name)
                 group.attrs.create('Pos', pos, dtype='S10')
@@ -98,16 +118,23 @@ def train_csv_to_h5(csv_file, h5):
                 group.attrs.create('Dim', dim, dtype='S10')
                 group.attrs.create('Zone', zone, dtype='S10')
                 group.attrs.create('ClinSig', clin_sig, dtype='S10')
-            except ValueError:
-                print('Skipping duplicate {}'.format(pathname))
 
+
+train_set = True
 
 if __name__ == "__main__":
     # Example usage
-    h5file = h5py.File('prostatex-train-ALL.hdf5', 'w')
-    main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Training'
-    data_folder = main_folder + '\\All_training_data'
-    images_train_csv = main_folder + '\\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-ALL.csv'
+    if train_set:
+        h5file = h5py.File('prostatex-train-ALL.hdf5', 'w')
+        main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Training'
+        data_folder = main_folder + '\\All_training_data'
+        images_csv = main_folder + '\\ProstateX-TrainingLesionInformationv2\\ProstateX-Images-Train-ALL.csv'
+
+    else:
+        h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')y
+        main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test'
+        data_folder = main_folder + '\\All_test_data'
+        images_csv = main_folder + '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test-ALL.csv'
 
     dicom_to_h5(data_folder, h5file)
-    train_csv_to_h5(images_train_csv, h5file)
+    train_csv_to_h5(images_csv, h5file)
