@@ -27,6 +27,11 @@ def get_lesion_info(h5_file, query_words):
 
     lesions_info = []
     for h5_group in query:
+        if 'pixel_array' not in h5_group or 'lesions' not in h5_group:
+            print('Warning in {}: No pixel array or lesions found for {}. Skipping...'
+                  .format(get_lesion_info, h5_group))
+            continue
+
         pixel_array = h5_group['pixel_array'][:]  # The actual DICOM pixel data
         patient_age = h5_group['pixel_array'].attrs.get('Age')
 
@@ -52,7 +57,7 @@ if __name__ == '__main__':
     """Example usage"""
     # Some basic examples using list comprehension on our HDF5 set:
 
-    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
+    h5_file = h5py.File('C:\Users\Jeftha\Downloads\prostatex-test.hdf5', 'r')
 
     # Selecting all patients
     patients = [h5_file[patient_id] for patient_id in h5_file.keys()]
@@ -70,9 +75,10 @@ if __name__ == '__main__':
     adc_series = [h5_file[patient_id][dcm_series]
                   for patient_id in h5_file.keys()
                   for dcm_series in h5_file[patient_id].keys()
-                  if 'ADC' in dcm_series]
+                  if '_ADC' in dcm_series]
     print(len(adc_series))
 
     lesions_info = get_lesion_info(h5_file, ['ADC'])
     for lesion_info, pixel_array in lesions_info:
+        current_patient = lesion_info[0]['name'].split('/')[1]
         print('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))
