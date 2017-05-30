@@ -28,8 +28,13 @@ class AucHistory(keras.callbacks.Callback):
     def on_train_begin(self, logs):
         self.auc_scores_train = []
         self.auc_scores_validation = []
+        self.best_auc_score_validation = -1
+        self.best_model = None
         
     def on_train_end(self, logs):
+        # Save the model that scored the best validation AUC
+        self.best_model.save('best_model.hdf5')
+
         #create image of the results
         plt.figure()
         fig, ax = plt.subplots()
@@ -75,6 +80,10 @@ class AucHistory(keras.callbacks.Callback):
             val_predictions = self.model.predict(self.validation_data)
             auc = self.compute_auc(self.validation_labels, val_predictions)
             self.auc_scores_validation.append((epoch, auc))
+            if auc > self.best_auc_score_validation:
+                print('New best validation score: {} > {}'.format(auc, self.best_auc_score_validation))
+                self.best_auc_score_validation = auc
+                self.best_model = self.model
         
     def compute_auc(self, y_true, y_score):
         fpr, tpr, _ = roc_curve(y_true, y_score)

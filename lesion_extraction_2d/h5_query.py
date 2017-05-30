@@ -57,7 +57,7 @@ if __name__ == '__main__':
     """Example usage"""
     # Some basic examples using list comprehension on our HDF5 set:
 
-    h5_file = h5py.File('C:\Users\Jeftha\Downloads\prostatex-test.hdf5', 'r')
+    h5_file = h5py.File('C:\\Users\Jeftha\Downloads\prostatex-test.hdf5', 'r')
 
     # Selecting all patients
     patients = [h5_file[patient_id] for patient_id in h5_file.keys()]

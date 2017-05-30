@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import h5py
-from h5_query import get_lesion_info
+from .h5_query import get_lesion_info
 
 
 class Centroid:

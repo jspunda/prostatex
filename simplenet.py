@@ -22,20 +22,25 @@ def get_model(configuration='baseline'):
 
     ## Model
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
-    model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
 
-    model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (1, 1), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
 
     model.add(Conv2D(1, (1, 1), activation='sigmoid'))
