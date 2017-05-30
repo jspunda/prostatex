@@ -1,4 +1,8 @@
 from simplenet import get_model
+from lesion_extraction_2d.lesion_extractor_2d import get_train_data
+import os
+import h5py
+import numpy as np
 
 
 def predict_to_file(filename):
@@ -8,10 +12,11 @@ def predict_to_file(filename):
     h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex', 'prostatex-test.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     x, _, attr = get_train_data(h5_file, ['ADC'])
+    x = np.expand_dims(x, axis=-1)
 
     predictions = m.predict(x, verbose=1)
 
-    with open(filename, 'wb') as f:
+    with open(filename, 'w') as f:
         f.write('proxid,clinsig\n')
 
         for i in range(len(predictions)):
