@@ -46,7 +46,7 @@ def get_model(configuration='baseline'):
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     ## Data
-    h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex', 'prostatex-train.hdf5')
+    h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
 
@@ -66,7 +66,7 @@ def get_model(configuration='baseline'):
 
     auc_history = AucHistory(train_data, train_labels, val_data, val_labels, output_graph_name=AUGMENTATION_CONFIGURATION)
 
-    model.fit_generator(train_generator, steps_per_epoch, epochs=100, verbose=2, callbacks=[auc_history], max_q_size=50, workers=8)
+    model.fit_generator(train_generator, steps_per_epoch, epochs=15000, verbose=2, callbacks=[auc_history], max_q_size=50, workers=8)
 
     return model
 
