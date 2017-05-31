@@ -117,3 +117,10 @@ def create_challengr_json(results_folder):
 
     with open(json_filename, 'w') as f:
         f.write(json.dumps(challengr_metadata))
+
+
+if __name__ == "__main__":
+    """Example usage:"""
+    submit_results({'username': 'jeftha.spunda', 'password': 'FU2PEA5N'},
+                   'predictions.csv',
+                   description={'notes': '15K epochs, using model with best validation AUC'})

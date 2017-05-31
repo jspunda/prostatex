@@ -22,20 +22,25 @@ def get_model(configuration='baseline'):
 
     ## Model
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
-    model.add(Conv2D(64, (2, 2), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
 
-    model.add(Conv2D(64, (1, 1), activation=LeakyReLU(), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(Conv2D(64, (1, 1), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
     model.add(BatchNormalization())
 
     model.add(Conv2D(1, (1, 1), activation='sigmoid'))
@@ -46,7 +51,7 @@ def get_model(configuration='baseline'):
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     ## Data
-    h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex', 'prostatex-train.hdf5')
+    h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
 
@@ -66,7 +71,7 @@ def get_model(configuration='baseline'):
 
     auc_history = AucHistory(train_data, train_labels, val_data, val_labels, output_graph_name=AUGMENTATION_CONFIGURATION)
 
-    model.fit_generator(train_generator, steps_per_epoch, epochs=100, verbose=2, callbacks=[auc_history], max_q_size=50, workers=8)
+    model.fit_generator(train_generator, steps_per_epoch, epochs=15000, verbose=2, callbacks=[auc_history], max_q_size=50, workers=8)
 
     return model
 
