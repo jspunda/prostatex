@@ -2,6 +2,7 @@ import os
 import h5py
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn import metrics
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 
 
@@ -12,7 +13,7 @@ def require_dir(path):
 
 def visualize_lesions(lesions, references, lesion_info, save=False, window=(None, None)):
     """
-    Visualizes lesion cutouts, their histograms and a bigger reference image. 
+    Visualizes lesion cutouts, their histograms and a bigger reference image.
     If save=True, plots will instead be saved to disk to img/{TRUE, FALSE}, depending on the lesion truth label
 
     :param lesions: Small lesion cutout image
@@ -89,11 +90,11 @@ def get_pixels_in_window(np_array, window):
         return None
 
 
-def plot_size_vs_value(lesions, window, marker='o'):
+def size_vs_value(lesions, window):
     """
-    Returns a plot for the actual lesion size vs. the lowest value within the window
+    Returns lists for the actual lesion size vs. the mean value within the window
 
-    The actual lesion size is defined as the amount of pixels in the cutout for which window[min] < pixel < window[max].
+    The actual lesion size is defined as the amount of pixels in the cutout for which window[min]<pixel<window[max].
     This helps get rid of black 'background' and other irrelevant values.
     However, for tight windows, this can leave zero pixels. These lesions are then dismissed.
     """
@@ -110,39 +111,85 @@ def plot_size_vs_value(lesions, window, marker='o'):
     # Gather lesion sizes
     lesion_sizes = [len(lesion_pixels) for lesion_pixels in pixels_inside]
 
-    plt.xlabel('Mean lesion value')
-    plt.ylabel('Pixel count within window')
-    return plt.scatter(mean_lesion_value, lesion_sizes, marker=marker)
+    return mean_lesion_value, lesion_sizes
 
 
-def size_vs_value_comparison(lesions, labels, window):
+def size_vs_value_scatter(lesions, labels, window):
     """
-    Gets size_vs_value plots for true and false lesions separately and plots them together in one figure, 
+    Gets size_vs_value lists for true and false lesions separately and plots them together in one figure,
     in order to visualize potential clusters within our data.
     """
     lesions_true = lesions[np.where(labels)[0]]  # Gather all true lesions
     lesions_false = lesions[np.where(labels == False)[0]]  # Gather all false lesions
 
-    false = plot_size_vs_value(lesions_false, window)
-    true = plot_size_vs_value(lesions_true, window, marker='x')
+    false_features = size_vs_value(lesions_false, window)
+    true_features = size_vs_value(lesions_true, window)
 
-    plt.legend((false, true), ('False', 'True'))
-    plt.title('Mean lesion value vs. pixel count in window\n(Lesion cutout size: {}x{}, window: {}-{})'.
-              format(lesions[0].shape[0], lesions[0].shape[0], window[0], window[1]))
+    false_plot = plt.scatter(false_features[0], false_features[1])
+    true_plot = plt.scatter(true_features[0], true_features[1], marker='x')
+
+    plt.xlabel('Mean lesion value')
+    plt.ylabel('Pixel count within window')
+    plt.legend((false_plot, true_plot), ('False', 'True'))
+    plt.title('Mean lesion value vs. pixel count in window\n(Lesion cutout size: {}x{}, window: {}-{})\n'
+              'Silhouette score: {}'
+              .format(lesions[0].shape[0], lesions[0].shape[0], window[0], window[1],
+                      size_vs_value_score(lesions, labels, window)))
     plt.tight_layout()
     plt.show()
 
 
+def size_vs_value_score(lesions, labels, window):
+    """"Computes silhouette score for a given clustering"""
+    lesions_true = lesions[np.where(labels)[0]]  # Gather all true lesions
+    lesions_false = lesions[np.where(labels == False)[0]]  # Gather all false lesions
+
+    false_features = size_vs_value(lesions_false, window)
+    true_features = size_vs_value(lesions_true, window)
+
+    false_combined = list(zip(false_features[0], false_features[1]))
+    false_labels = [0 for item in false_combined]
+
+    true_combined = list(zip(true_features[0], true_features[1]))
+    true_labels = [1 for item in true_combined]
+
+    # Enforce that we have enough data points
+    if len(false_labels) >= int(0.75 * len(lesions_false)) and len(true_labels) >= int(0.75 * len(lesions_true)):
+        return metrics.silhouette_score(false_combined + true_combined, false_labels + true_labels)
+    else:
+        return -1
+
+
+def find_best_window(lesions, labels):
+    all_windows = [(start, end) for start in range(100, 4000, 100) for end in range(start+100, 4000, 100)]
+    scores = [(size_vs_value_score(lesions, labels, window), window) for window in all_windows]
+    best_window = max(scores)
+    return best_window
+
+
 if __name__ == "__main__":
     """ Example usage: """
-    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
-    query_words = ['_ADC']
-    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=8)
+    h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\data\\prostatex-train.hdf5', 'r')
+    query_words = ['ADC']
     X_big, y, attr = get_train_data(h5_file, query_words, size_px=40)
+
+    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=8)
+    size_vs_value_scatter(X, y_labels, find_best_window(X, y_labels)[1])
+
+    # zones = ['AS', 'PZ', 'TZ']
+    # for i in range(4, 18, 2):
+    #     X, y_labels, attr = get_train_data(h5_file, query_words, size_px=i)
+    #     # for zone in zones:
+    #     #     zoneX = np.asarray([X[np.where(attr == el)][0] for el in attr if el['Zone'] == zone])
+    #     #     zoneY = np.asarray([y_labels[np.where(attr == el)][0] for el in attr if el['Zone'] == zone])
+    #     #     # zoneA = np.asarray([el for el in attr if el['Zone'] == zone])
+    #     #     size_vs_value_scatter(zoneX, zoneY, find_best_window(zoneX, zoneY)[1])
+    #     size_vs_value_scatter(X, y_labels, find_best_window(X, y_labels)[1])
 
     # Lesions often show up between these two values.
     # Effects of different windows values can be checked using visualize_lesions with a window
-    ADC_window = (300, 1200)
+    # ADC_window = (0, 100)
+    # print size_vs_value_score(X, y_labels, ADC_window)
+    # size_vs_value_scatter(X, y_labels, ADC_window)
 
-    size_vs_value_comparison(X, y_labels, ADC_window)
-    visualize_lesions(X, X_big, attr, save=False, window=ADC_window)
+    # visualize_lesions(pzX, pzX, pzA, save=False, window=ADC_window)
