@@ -14,6 +14,16 @@ class Centroid:
         return '({}, {}, {})'.format(self.x, self.y, self.z)
 
 
+class VoxelSpacing:
+    def __init__(self, width, height, depth):
+        self.width = width
+        self.height = height
+        self.depth = depth
+
+    def __repr__(self):
+        return '({}, {}, {})'.format(self.width, self.height, self.depth)
+
+
 def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
     if imagetype == 'ADC':
         if size is None:
@@ -40,6 +50,11 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
+def parse_voxelspacing(spacing):
+    spacing = spacing.split(b",")
+    return VoxelSpacing(int(spacing[0]), int(spacing[1]), int(spacing[2]))
+
+
 def get_train_data(h5_file, query_words, size_px=16):
     lesion_info = get_lesion_info(h5_file, query_words)
 
@@ -56,7 +71,17 @@ def get_train_data(h5_file, query_words, size_px=16):
         for lesion in infos:
 
             centroid = parse_centroid(lesion['ijk'])
+
+            # convert mm to pix
+            # voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
+            # size_px = size_mm // voxel_sizes.width
+
+
             lesion_img = extract_lesion_2d(image, centroid, size=size_px)
+
+
+
+
             if lesion_img is None:
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
                       .format(get_train_data.__name__, lesion))
