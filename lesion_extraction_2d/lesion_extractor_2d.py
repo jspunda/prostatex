@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import h5py
+from scipy.misc import imresize
 from .h5_query import get_lesion_info
 
 
@@ -73,14 +74,13 @@ def get_train_data(h5_file, query_words, size_px=16):
             centroid = parse_centroid(lesion['ijk'])
 
             # convert mm to pix
-            # voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
-            # size_px = size_mm // voxel_sizes.width
-
+            voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
+            size_px = size_px // voxel_sizes.width
 
             lesion_img = extract_lesion_2d(image, centroid, size=size_px)
 
-
-
+            # resample
+            lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
 
             if lesion_img is None:
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
