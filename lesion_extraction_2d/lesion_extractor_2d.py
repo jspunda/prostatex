@@ -53,7 +53,7 @@ def parse_centroid(ijk):
 
 def parse_voxelspacing(spacing):
     spacing = spacing.split(b",")
-    return VoxelSpacing(int(spacing[0]), int(spacing[1]), int(spacing[2]))
+    return VoxelSpacing(float(spacing[0]), float(spacing[1]), float(spacing[2]))
 
 
 def get_train_data(h5_file, query_words, size_px=16):
@@ -75,17 +75,17 @@ def get_train_data(h5_file, query_words, size_px=16):
 
             # convert mm to pix
             voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
-            size_px = size_px // voxel_sizes.width
+            size_mm = size_px // voxel_sizes.width
 
-            lesion_img = extract_lesion_2d(image, centroid, size=size_px)
-
-            # resample
-            lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
+            lesion_img = extract_lesion_2d(image, centroid, size=size_mm)
 
             if lesion_img is None:
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
                       .format(get_train_data.__name__, lesion))
                 continue
+
+            # resample
+            lesion_img = imresize(lesion_img, (size_mm, size_mm), interp='bilinear')
 
             X.append(lesion_img)
 
