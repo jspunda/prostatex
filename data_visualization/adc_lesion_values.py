@@ -81,6 +81,13 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
             print('Showing plot {} of {}'.format(i + 1, lesions_flat.shape[0]))
             plt.show()
 
+def apply_window(np_array, window):
+    print(np_array)
+    np_array[np_array < window[0]] = window[0]
+    np_array[np_array > window[1]] = window[1]
+    print(np_array)
+    return np_array
+
 
 def get_pixels_in_window(np_array, window):
     pixels = np_array[(window[0] < np_array) & (np_array < window[1])]
@@ -173,7 +180,7 @@ if __name__ == "__main__":
     query_words = ['ADC']
     X_big, y, attr = get_train_data(h5_file, query_words, size_px=40)
 
-    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=8)
+    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=16)
     size_vs_value_scatter(X, y_labels, find_best_window(X, y_labels)[1])
 
     # zones = ['AS', 'PZ', 'TZ']
