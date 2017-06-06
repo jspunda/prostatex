@@ -85,7 +85,7 @@ def get_train_data(h5_file, query_words, size_px=16):
                 continue
 
             # resample
-            lesion_img = imresize(lesion_img, (size_mm, size_mm), interp='bilinear')
+            lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
 
             X.append(lesion_img)
 
