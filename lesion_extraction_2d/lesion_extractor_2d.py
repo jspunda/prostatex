@@ -103,7 +103,7 @@ def get_train_data(h5_file, query_words, size_px=16):
             continue
         
         X_final.append(x_new)
-        y_final.append(y)
+        y_final.append(y_new)
         
     return np.asarray(X_final), np.asarray(y_final)
 
