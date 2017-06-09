@@ -40,6 +40,14 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
+def str_to_modality(in_str):
+    modalities = ['ADC', 't2_tse_tra']
+    for m in modalities:
+        if m in in_str:
+            return m
+    
+    return "NONE"
+
 def get_train_data(h5_file, query_words, size_px=16):
     lesion_info = get_lesion_info(h5_file, query_words)
 
@@ -48,8 +56,10 @@ def get_train_data(h5_file, query_words, size_px=16):
     lesion_attributes = []
     previous_patient = ''
     for infos, image in lesion_info:
-        current_patient = infos[0]['name'].split('/')[1]
-        if current_patient == previous_patient:
+        current_patient, current_modality, _ = infos[0]['name'].split('/', 2)
+        current_modality = str_to_modality(current_modality)
+        
+        if current_patient == previous_patient and current_modality == previous_modality:
             print('Warning in {}: Found duplicate match for {}. Skipping...'
                   .format(get_train_data.__name__, current_patient))
             continue
@@ -69,6 +79,7 @@ def get_train_data(h5_file, query_words, size_px=16):
             y.append(lesion['ClinSig'] == b"TRUE")
 
         previous_patient = current_patient
+        previous_modality = current_modality
 
     return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
