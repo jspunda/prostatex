@@ -77,7 +77,7 @@ def get_model(configuration='baseline'):
 
     auc_history = AucHistory(train_data, train_labels, val_data, val_labels, output_graph_name=AUGMENTATION_CONFIGURATION)
 
-    model.fit_generator(train_generator, steps_per_epoch, epochs=2000, verbose=1, callbacks=[auc_history], max_q_size=50, workers=8)
+    model.fit_generator(train_generator, steps_per_epoch, epochs=15000, verbose=2, callbacks=[auc_history], max_q_size=50, workers=8)
 
     return model
 

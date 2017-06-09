@@ -91,7 +91,6 @@ def get_train_data(h5_file, query_words, size_px=16):
     X_final = []
     y_final = []
     attr_final = []
-    print(unique_patient_ids)
     for patient_id, fid in unique_patient_ids:
         x_new = []
         y_new = 0
