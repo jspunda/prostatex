@@ -93,3 +93,9 @@ ENV/
 
 # Lesion info plots
 data_visualization/img/
+
+# Network outputs
+*.png
+*.svg
+*.csv
+*.hdf5

@@ -11,12 +11,12 @@ def predict_to_file(filename, path_to_model):
     # Data
     h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-test.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
-    x, _, attr = get_train_data(h5_file, ['ADC'])
-    x = np.expand_dims(x, axis=-1)
-    windowed = []
-    for lesion in x:
-        windowed.append(apply_window(lesion, (500, 1100)))
-    x = np.asarray(windowed)
+    x, _, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'])
+    # x = np.expand_dims(x, axis=-1)
+    # windowed = []
+    # for lesion in x:
+    #     windowed.append(apply_window(lesion, (500, 1100)))
+    # x = np.asarray(windowed)
     predictions = model.predict(x, verbose=1)
 
     with open(filename, 'w') as f:
