@@ -56,6 +56,9 @@ def get_train_data(h5_file, query_words, size_px=16):
     lesion_attributes = []
     previous_patient = ''
     previous_modality = ''
+    
+    unique_patient_ids = []
+    
     for infos, image in lesion_info:
         _, current_patient, current_modality = infos[0]['name'].split('/')
         current_modality = str_to_modality(current_modality)
@@ -65,7 +68,8 @@ def get_train_data(h5_file, query_words, size_px=16):
                   .format(get_train_data.__name__, current_patient))
             continue
         for lesion in infos:
-
+            unique_patient_ids.append((lesion['patient_id'], lesion['fid']))
+            
             centroid = parse_centroid(lesion['ijk'])
             lesion_img = extract_lesion_2d(image, centroid, size=size_px)
             if lesion_img is None:
@@ -82,14 +86,33 @@ def get_train_data(h5_file, query_words, size_px=16):
         previous_patient = current_patient
         previous_modality = current_modality
 
-    return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
+    X_final = []
+    y_final = []
+    for patient_id, fid in unique_patient_ids:
+        x_new = []
+        y_new = 0
+        for i in range(len(lesion_attributes)):
+            attr = lesion_attributes[i]
+            
+            if attr['patient_id'] == patient_id and attr['fid'] == fid:
+                x_new.append(X[i])
+                y_new = y[i]
+        
+        if not len(x_new) == len(query_words):
+            print("Missing modalities for patient %s" % patient_id)
+            continue
+        
+        X_final.append(x_new)
+        y_final.append(y)
+        
+    return np.asarray(X_final), np.asarray(y_final)
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['ADC'])
+    X, y = get_train_data(h5_file, ['ADC'])
 
     print(y[0])
     print(attr[0])
