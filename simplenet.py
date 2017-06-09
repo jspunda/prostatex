@@ -15,7 +15,7 @@ from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 from utils.auc_callback import AucHistory
 from utils.generator_from_config import get_generator
 from utils.train_test_split import train_test_split
-
+from data_visualization.adc_lesion_values import apply_window
 
 def get_model(configuration='baseline'):
     AUGMENTATION_CONFIGURATION = configuration
@@ -54,6 +54,10 @@ def get_model(configuration='baseline'):
     h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
+    windowed = []
+    for lesion in train_data_list:
+        windowed.append(apply_window(lesion, (500, 1100)))
+    train_data_list = np.asarray(windowed)
 
     train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, attr, test_size=0.33)
 
