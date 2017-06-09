@@ -55,6 +55,7 @@ def get_train_data(h5_file, query_words, size_px=16):
     y = []
     lesion_attributes = []
     previous_patient = ''
+    previous_modality = ''
     for infos, image in lesion_info:
         current_patient, current_modality, _ = infos[0]['name'].split('/', 2)
         current_modality = str_to_modality(current_modality)
