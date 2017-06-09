@@ -43,7 +43,10 @@ def join_rows(reader,ktrans_lst):
 
     for row in reader:
         try:
-            last_row = reader.line_num == 3870
+            if train_set:
+                last_row = reader.line_num == 3870
+            else:
+                last_row = reader.line_num == 1772
         except AttributeError:
             last_row = row == reader[-1]
         if new_lst[-1][0] != row[0] or last_row:
