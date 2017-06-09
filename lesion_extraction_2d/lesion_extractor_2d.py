@@ -48,6 +48,7 @@ def str_to_modality(in_str):
     
     return "NONE"
 
+
 def get_train_data(h5_file, query_words, size_px=16):
     lesion_info = get_lesion_info(h5_file, query_words)
 
@@ -106,8 +107,10 @@ def get_train_data(h5_file, query_words, size_px=16):
         X_final.append(x_new)
         y_final.append(y_new)
         attr_final.append({'patient_id': patient_id, 'fid': fid})
-        
-    return np.asarray(X_final), np.asarray(y_final), np.asarray(attr_final)
+
+    X_final = np.asarray(X_final)
+    X_final = np.reshape(X_final, (X_final.shape[0], X_final.shape[2], X_final.shape[3], X_final.shape[1]))
+    return X_final, np.asarray(y_final), np.asarray(attr_final)
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt

@@ -23,7 +23,7 @@ def get_model(configuration='baseline'):
 
     ## Model
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(3, 16, 16)))
+    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 3)))
     model.add(LeakyReLU())
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -54,7 +54,7 @@ def get_model(configuration='baseline'):
     ## Data
     h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
-    train_data_list, train_labels_list = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'])
+    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'])
     windowed = []
     # for lesion in train_data_list:
     #     windowed.append(apply_window(lesion, (500, 1100)))
