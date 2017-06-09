@@ -88,6 +88,7 @@ def get_train_data(h5_file, query_words, size_px=16):
 
     X_final = []
     y_final = []
+    attr_final = []
     for patient_id, fid in unique_patient_ids:
         x_new = []
         y_new = 0
@@ -104,15 +105,16 @@ def get_train_data(h5_file, query_words, size_px=16):
         
         X_final.append(x_new)
         y_final.append(y_new)
+        attr_final.append({'patient_id': patient_id, 'fid': fid})
         
-    return np.asarray(X_final), np.asarray(y_final)
+    return np.asarray(X_final), np.asarray(y_final), np.asarray(attr_final)
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
-    X, y = get_train_data(h5_file, ['ADC'])
+    X, y, _ = get_train_data(h5_file, ['ADC'])
 
     print(y[0])
     print(attr[0])
