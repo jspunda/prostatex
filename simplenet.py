@@ -51,9 +51,9 @@ def get_model(configuration='baseline'):
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     ## Data
-    h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-train.hdf5')
+    h5_file_location = os.path.join('C:\\Users\\Jeftha\\Downloads', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
-    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC'])
+    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['t2_tse_tra'], size_px=16)
 
     train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, attr, test_size=0.33)
 

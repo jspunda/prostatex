@@ -53,7 +53,9 @@ def parse_centroid(ijk):
 
 def parse_voxelspacing(spacing):
     spacing = spacing.split(b",")
+
     return VoxelSpacing(float(spacing[0]), float(spacing[1]), float(spacing[2]))
+
 
 
 def get_train_data(h5_file, query_words, size_px=16):
@@ -74,7 +76,13 @@ def get_train_data(h5_file, query_words, size_px=16):
             centroid = parse_centroid(lesion['ijk'])
 
             # convert mm to pix
-            voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
+            try:
+                voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
+            except IndexError:
+                print(lesion['name'])
+                print(lesion)
+                import sys
+                sys.exit(0)
             size_mm = size_px // voxel_sizes.width
 
             lesion_img = extract_lesion_2d(image, centroid, size=size_mm)

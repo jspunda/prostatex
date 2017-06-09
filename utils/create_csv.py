@@ -11,7 +11,7 @@ def predict_to_file(filename, path_to_model):
     # Data
     h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-test.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
-    x, _, attr = get_train_data(h5_file, ['ADC'])
+    x, _, attr = get_train_data(h5_file, ['t2_tse_tra'])
     x = np.expand_dims(x, axis=-1)
 
     predictions = model.predict(x, verbose=1)
