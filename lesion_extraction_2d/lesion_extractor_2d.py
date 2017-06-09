@@ -57,7 +57,7 @@ def get_train_data(h5_file, query_words, size_px=16):
     previous_patient = ''
     previous_modality = ''
     for infos, image in lesion_info:
-        current_patient, current_modality, _ = infos[0]['name'].split('/', 2)
+        _, current_patient, current_modality = infos[0]['name'].split('/')
         current_modality = str_to_modality(current_modality)
         
         if current_patient == previous_patient and current_modality == previous_modality:
