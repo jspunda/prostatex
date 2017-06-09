@@ -123,4 +123,4 @@ if __name__ == "__main__":
     """Example usage:"""
     submit_results({'username': 'jeftha.spunda', 'password': 'FU2PEA5N'},
                    'predictions.csv',
-                   description={'notes': '2k epochs, t2tra,t2sag,adc, 16px'})
+                   description={'notes': '10k epochs, t2tra,t2sag,adc, 16px'})

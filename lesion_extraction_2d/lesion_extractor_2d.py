@@ -69,7 +69,8 @@ def get_train_data(h5_file, query_words, size_px=16):
                   .format(get_train_data.__name__, current_patient))
             continue
         for lesion in infos:
-            unique_patient_ids.append((lesion['patient_id'], lesion['fid']))
+            if not ((lesion['patient_id'], lesion['fid']) in unique_patient_ids):
+                unique_patient_ids.append((lesion['patient_id'], lesion['fid']))
             
             centroid = parse_centroid(lesion['ijk'])
             lesion_img = extract_lesion_2d(image, centroid, size=size_px)
@@ -90,6 +91,7 @@ def get_train_data(h5_file, query_words, size_px=16):
     X_final = []
     y_final = []
     attr_final = []
+    print(unique_patient_ids)
     for patient_id, fid in unique_patient_ids:
         x_new = []
         y_new = 0
@@ -107,9 +109,8 @@ def get_train_data(h5_file, query_words, size_px=16):
         X_final.append(x_new)
         y_final.append(y_new)
         attr_final.append({'patient_id': patient_id, 'fid': fid})
-
     X_final = np.asarray(X_final)
-    X_final = np.reshape(X_final, (X_final.shape[0], X_final.shape[2], X_final.shape[3], X_final.shape[1]))
+    X_final = np.rollaxis(X_final, 1, 4)
     return X_final, np.asarray(y_final), np.asarray(attr_final)
 
 if __name__ == "__main__":
