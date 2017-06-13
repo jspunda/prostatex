@@ -14,15 +14,16 @@ from keras.initializers import RandomNormal
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 from utils.auc_callback import AucHistory
 from utils.generator_from_config import get_generator
-from utils.train_test_split import train_test_split
+from data_visualization.adc_lesion_values import apply_window
 
+from sklearn.cross_validation import train_test_split
 
 def get_model(configuration='baseline'):
     AUGMENTATION_CONFIGURATION = configuration
 
     ## Model
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 1)))
+    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 3)))
     model.add(LeakyReLU())
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -53,12 +54,18 @@ def get_model(configuration='baseline'):
     ## Data
     h5_file_location = os.path.join('C:\\Users\\Jeftha\\Downloads', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
-    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['t2_tse_tra'], size_px=16)
+    
+    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'])
 
-    train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, attr, test_size=0.33)
+    # windowed = []
+    # for lesion in train_data_list:
+    #     windowed.append(apply_window(lesion[:][:][0], (500, 1100)))
+    # train_data_list = np.asarray(windowed)
 
-    train_data = np.expand_dims(train_data, axis=-1)
-    val_data = np.expand_dims(val_data, axis=-1)
+    train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, test_size=0.33)
+
+    # train_data = np.expand_dims(train_data, axis=-1)
+    # val_data = np.expand_dims(val_data, axis=-1)
     train_labels = np.expand_dims(train_labels, axis=-1)
     val_labels = np.expand_dims(val_labels, axis=-1)
 

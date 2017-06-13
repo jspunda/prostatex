@@ -3,7 +3,7 @@ from keras.models import load_model
 import os
 import h5py
 import numpy as np
-
+from data_visualization.adc_lesion_values import apply_window
 
 def predict_to_file(filename, path_to_model):
     model = load_model(path_to_model)
@@ -11,8 +11,13 @@ def predict_to_file(filename, path_to_model):
     # Data
     h5_file_location = os.path.join('C:\\Users\Jeftha\stack\Rommel\ISMI\data', 'prostatex-test.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
-    x, _, attr = get_train_data(h5_file, ['t2_tse_tra'])
-    x = np.expand_dims(x, axis=-1)
+
+    x, _, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'])
+    # x = np.expand_dims(x, axis=-1)
+    # windowed = []
+    # for lesion in x:
+    #     windowed.append(apply_window(lesion, (500, 1100)))
+    # x = np.asarray(windowed)
 
     predictions = model.predict(x, verbose=1)
 

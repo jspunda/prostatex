@@ -56,6 +56,14 @@ def parse_voxelspacing(spacing):
 
     return VoxelSpacing(float(spacing[0]), float(spacing[1]), float(spacing[2]))
 
+  
+def str_to_modality(in_str):
+    modalities = ['ADC', 't2_tse_tra']
+    for m in modalities:
+        if m in in_str:
+            return m
+    
+    return "NONE"
 
 
 def get_train_data(h5_file, query_words, size_px=16):
@@ -65,14 +73,22 @@ def get_train_data(h5_file, query_words, size_px=16):
     y = []
     lesion_attributes = []
     previous_patient = ''
+    previous_modality = ''
+    
+    unique_patient_ids = []
+    
     for infos, image in lesion_info:
-        current_patient = infos[0]['name'].split('/')[1]
-        if current_patient == previous_patient:
+        _, current_patient, current_modality = infos[0]['name'].split('/')
+        current_modality = str_to_modality(current_modality)
+        
+        if current_patient == previous_patient and current_modality == previous_modality:
             print('Warning in {}: Found duplicate match for {}. Skipping...'
                   .format(get_train_data.__name__, current_patient))
             continue
         for lesion in infos:
-
+            if not ((lesion['patient_id'], lesion['fid']) in unique_patient_ids):
+                unique_patient_ids.append((lesion['patient_id'], lesion['fid']))
+            
             centroid = parse_centroid(lesion['ijk'])
 
             # convert mm to pix
@@ -102,15 +118,38 @@ def get_train_data(h5_file, query_words, size_px=16):
             y.append(lesion['ClinSig'] == b"TRUE")
 
         previous_patient = current_patient
+        previous_modality = current_modality
 
-    return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
+    X_final = []
+    y_final = []
+    attr_final = []
+    for patient_id, fid in unique_patient_ids:
+        x_new = []
+        y_new = 0
+        for i in range(len(lesion_attributes)):
+            attr = lesion_attributes[i]
+            
+            if attr['patient_id'] == patient_id and attr['fid'] == fid:
+                x_new.append(X[i])
+                y_new = y[i]
+        
+        if not len(x_new) == len(query_words):
+            print("Missing modalities for patient %s" % patient_id)
+            continue
+        
+        X_final.append(x_new)
+        y_final.append(y_new)
+        attr_final.append({'patient_id': patient_id, 'fid': fid})
+    X_final = np.asarray(X_final)
+    X_final = np.rollaxis(X_final, 1, 4)
+    return X_final, np.asarray(y_final), np.asarray(attr_final)
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\prostatex-train.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['ADC'])
+    X, y, _ = get_train_data(h5_file, ['ADC'])
 
     print(y[0])
     print(attr[0])
