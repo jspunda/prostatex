@@ -15,7 +15,13 @@ class Centroid:
 
 
 def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
-    if imagetype == 'ADC':
+    if imagetype == 'T2TRA':
+        if size is None:
+            sizecal = math.ceil(realsize * 2)
+    elif imagetype == 'KTRANS':
+        if size is None:
+            sizecal = math.ceil(realsize / 1.5)
+    elif imagetype == 'ADC':
         if size is None:
             sizecal = math.ceil(realsize / 2)
         else:
