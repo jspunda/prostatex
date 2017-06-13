@@ -55,7 +55,7 @@ def get_model(configuration='baseline'):
     h5_file_location = os.path.join('C:\\Users\\Jeftha\\Downloads', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     
-    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'])
+    train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'], size_px=16, size_mm=32)
 
     # windowed = []
     # for lesion in train_data_list:
