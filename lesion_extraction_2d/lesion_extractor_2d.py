@@ -25,18 +25,11 @@ class VoxelSpacing:
         return '({}, {}, {})'.format(self.width, self.height, self.depth)
 
 
-def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
-    if imagetype == 'ADC':
-        if size is None:
-            sizecal = math.ceil(realsize / 2)
-        else:
-            sizecal = size
-    else:
-        sizecal = size
-    x_start = int(centroid_position.x - sizecal / 2)
-    x_end = int(centroid_position.x + sizecal / 2)
-    y_start = int(centroid_position.y - sizecal / 2)
-    y_end = int(centroid_position.y + sizecal / 2)
+def extract_lesion_2d(img, centroid_position, size_px=None):
+    x_start = int(centroid_position.x - size_px // 2)
+    x_end = int(centroid_position.x + size_px // 2)
+    y_start = int(centroid_position.y - size_px // 2)
+    y_end = int(centroid_position.y + size_px // 2)
 
     if centroid_position.z < 0 or centroid_position.z >= len(img):
         return None
@@ -58,7 +51,7 @@ def parse_voxelspacing(spacing):
 
   
 def str_to_modality(in_str):
-    modalities = ['ADC', 't2_tse_tra']
+    modalities = ['ADC', 't2_tse_tra', 't2_tse_sag']
     for m in modalities:
         if m in in_str:
             return m
@@ -66,7 +59,7 @@ def str_to_modality(in_str):
     return "NONE"
 
 
-def get_train_data(h5_file, query_words, size_px=16):
+def get_train_data(h5_file, query_words, size_px=16, size_mm=16):
     lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
@@ -99,9 +92,8 @@ def get_train_data(h5_file, query_words, size_px=16):
                 print(lesion)
                 import sys
                 sys.exit(0)
-            size_mm = size_px // voxel_sizes.width
 
-            lesion_img = extract_lesion_2d(image, centroid, size=size_mm)
+            lesion_img = extract_lesion_2d(image, centroid, size_px=size_mm // voxel_sizes.width)
 
             if lesion_img is None:
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
