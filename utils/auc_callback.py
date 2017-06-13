@@ -81,9 +81,10 @@ class AucHistory(keras.callbacks.Callback):
             auc = self.compute_auc(self.validation_labels, val_predictions)
             self.auc_scores_validation.append((epoch, auc))
             if auc > self.best_auc_score_validation:
-                print('New best validation score: {} > {}'.format(auc, self.best_auc_score_validation))
+                print('New best validation score:\n{} > {}'.format(auc, self.best_auc_score_validation))
                 self.best_auc_score_validation = auc
                 self.best_model = self.model
+                self.best_model.save('best_model.hdf5')
         
     def compute_auc(self, y_true, y_score):
         fpr, tpr, _ = roc_curve(y_true, y_score)
