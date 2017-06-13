@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import h5py
+from scipy.misc import imresize
 from .h5_query import get_lesion_info
 
 
@@ -12,6 +13,16 @@ class Centroid:
 
     def __repr__(self):
         return '({}, {}, {})'.format(self.x, self.y, self.z)
+
+
+class VoxelSpacing:
+    def __init__(self, width, height, depth):
+        self.width = width
+        self.height = height
+        self.depth = depth
+
+    def __repr__(self):
+        return '({}, {}, {})'.format(self.width, self.height, self.depth)
 
 
 def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
@@ -40,6 +51,12 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
+def parse_voxelspacing(spacing):
+    spacing = spacing.split(b",")
+
+    return VoxelSpacing(float(spacing[0]), float(spacing[1]), float(spacing[2]))
+
+  
 def str_to_modality(in_str):
     modalities = ['ADC', 't2_tse_tra']
     for m in modalities:
@@ -73,11 +90,26 @@ def get_train_data(h5_file, query_words, size_px=16):
                 unique_patient_ids.append((lesion['patient_id'], lesion['fid']))
             
             centroid = parse_centroid(lesion['ijk'])
-            lesion_img = extract_lesion_2d(image, centroid, size=size_px)
+
+            # convert mm to pix
+            try:
+                voxel_sizes = parse_voxelspacing(lesion['VoxelSpacing'])
+            except IndexError:
+                print(lesion['name'])
+                print(lesion)
+                import sys
+                sys.exit(0)
+            size_mm = size_px // voxel_sizes.width
+
+            lesion_img = extract_lesion_2d(image, centroid, size=size_mm)
+
             if lesion_img is None:
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
                       .format(get_train_data.__name__, lesion))
                 continue
+
+            # resample
+            lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
 
             X.append(lesion_img)
 

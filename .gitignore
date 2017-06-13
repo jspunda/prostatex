@@ -97,5 +97,7 @@ data_visualization/img/
 # Network outputs
 *.png
 *.svg
-*.csv
+predictions.csv
+
 *.hdf5
+

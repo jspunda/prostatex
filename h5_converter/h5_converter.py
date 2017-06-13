@@ -141,15 +141,15 @@ def train_csv_to_h5(csv_file, h5):
             else:
                 group = h5.create_group(pathname)
                 group.attrs.create('Name', name)
-                group.attrs.create('Pos', pos, dtype='S10')
-                group.attrs.create('WorldMatrix', world_matrix, dtype='S10')
-                group.attrs.create('ijk', ijk, dtype='S10')
-                group.attrs.create('TopLevel', top_level, dtype='S10')
-                group.attrs.create('SpacingBetween', spacing_between, dtype='S10')
-                group.attrs.create('VoxelSpacing', voxel_spacing, dtype='S10')
-                group.attrs.create('Dim', dim, dtype='S10')
-                group.attrs.create('Zone', zone, dtype='S10')
-                group.attrs.create('ClinSig', clin_sig, dtype='S10')
+                group.attrs.create('Pos', pos, dtype='S50')
+                group.attrs.create('WorldMatrix', world_matrix, dtype='S50')
+                group.attrs.create('ijk', ijk, dtype='S50')
+                group.attrs.create('TopLevel', top_level, dtype='S50')
+                group.attrs.create('SpacingBetween', spacing_between, dtype='S50')
+                group.attrs.create('VoxelSpacing', voxel_spacing, dtype='S50')
+                group.attrs.create('Dim', dim, dtype='S50')
+                group.attrs.create('Zone', zone, dtype='S50')
+                group.attrs.create('ClinSig', clin_sig, dtype='S50')
 
             # try:
             #     group = h5.create_group(pathname)
@@ -171,8 +171,8 @@ if __name__ == "__main__":
     """Example usage: """
     # Example usage for train set
     h5file = h5py.File('prostatex-train.hdf5', 'w')
-    dcm_folder = 'C:\Users\Jeftha\Downloads\DOI'
-    images_train_csv = 'C:\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
+    dcm_folder = 'C:\\Users\Jeftha\Downloads\DOI'
+    images_train_csv = 'C:\\Users\Jeftha\Downloads\ProstateX-TrainingLesionInformationv2' \
                        '\ProstateX-TrainingLesionInformationv2\ProstateX-Images-Train-NEW.csv'
 
     dicom_to_h5(dcm_folder, h5file)
