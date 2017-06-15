@@ -2,9 +2,10 @@ import h5py
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 from data_visualization.adc_lesion_values import get_pixels_in_window
 from collections import OrderedDict
+import numpy as np
 
 
-def get_adc_features(h5_file_path, window, lesion_size):
+def get_adc_features(h5_file_path, window, lesion_size, percentile=60):
     """
     Gathers amount of pixels within window and the mean of those pixels for ADC images.
     Returns an ordered dictionary of the form:
@@ -38,7 +39,8 @@ def get_adc_features(h5_file_path, window, lesion_size):
         feature_dict[prox_id] = {}
         if pixels_in_window is not None:
             feature_dict[prox_id]['count'] = len(pixels_in_window)
-            feature_dict[prox_id]['mean'] = pixels_in_window.mean()
+            # feature_dict[prox_id]['mean'] = pixels_in_window.mean()
+            feature_dict[prox_id]['mean'] = np.percentile(pixels_in_window, percentile)
         else:
             feature_dict[prox_id]['count'] = 0
             feature_dict[prox_id]['mean'] = 0
@@ -48,7 +50,7 @@ def get_adc_features(h5_file_path, window, lesion_size):
 if __name__ == "__main__":
     """ Example usage: """
     h5_path = 'C:\\users\\Jeftha\\stack\\Rommel\\ISMI\\data\\prostatex-train.hdf5'
-    features = get_adc_features(h5_path, (500, 1100), 16)
+    features = get_adc_features(h5_path, (300, 1100), 8)
     print(features)
 
     # Get info for patient 42, lesion 1
