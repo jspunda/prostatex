@@ -1,7 +1,6 @@
-import math
 import numpy as np
 import h5py
-from scipy.misc import imresize
+import cv2
 from .h5_query import get_lesion_info
 
 
@@ -101,7 +100,7 @@ def get_train_data(h5_file, query_words, size_px=16, size_mm=16):
                 continue
 
             # resample
-            lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
+            lesion_img = cv2.resize(lesion_img, (size_px, size_px), interpolation=cv2.INTER_LINEAR)
 
             X.append(lesion_img)
 

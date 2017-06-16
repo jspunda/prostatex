@@ -82,10 +82,8 @@ def visualize_lesions(lesions, references, lesion_info, save=False, window=(None
             plt.show()
 
 def apply_window(np_array, window):
-    print(np_array)
     np_array[np_array < window[0]] = window[0]
     np_array[np_array > window[1]] = window[1]
-    print(np_array)
     return np_array
 
 
