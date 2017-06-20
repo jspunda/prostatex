@@ -97,9 +97,9 @@ def get_pixels_in_window(np_array, window):
         return None
 
 
-def size_vs_value(lesions, window):
+def size_vs_value(lesions, window, percentile):
     """
-    Returns lists for the actual lesion size vs. the mean value within the window
+    Returns lists for the actual lesion size vs. the n-th percentile of the pixels within a window
 
     The actual lesion size is defined as the amount of pixels in the cutout for which window[min]<pixel<window[max].
     This helps get rid of black 'background' and other irrelevant values.
@@ -112,16 +112,16 @@ def size_vs_value(lesions, window):
         if pixels is not None:
             pixels_inside.append(pixels)
 
-    # Gather lowest values in lesions
-    mean_lesion_value = [lesion_pixels.mean() for lesion_pixels in pixels_inside]
+    # Gather n-th percentile values in lesions
+    lesion_percentiles = [np.percentile(lesion_pixels, percentile) for lesion_pixels in pixels_inside]
 
     # Gather lesion sizes
     lesion_sizes = [len(lesion_pixels) for lesion_pixels in pixels_inside]
 
-    return mean_lesion_value, lesion_sizes
+    return lesion_percentiles, lesion_sizes
 
 
-def size_vs_value_scatter(lesions, labels, window):
+def size_vs_value_scatter(lesions, labels, window, percentile):
     """
     Gets size_vs_value lists for true and false lesions separately and plots them together in one figure,
     in order to visualize potential clusters within our data.
@@ -129,30 +129,30 @@ def size_vs_value_scatter(lesions, labels, window):
     lesions_true = lesions[np.where(labels)[0]]  # Gather all true lesions
     lesions_false = lesions[np.where(labels == False)[0]]  # Gather all false lesions
 
-    false_features = size_vs_value(lesions_false, window)
-    true_features = size_vs_value(lesions_true, window)
+    false_features = size_vs_value(lesions_false, window, percentile)
+    true_features = size_vs_value(lesions_true, window, percentile)
 
     false_plot = plt.scatter(false_features[0], false_features[1])
     true_plot = plt.scatter(true_features[0], true_features[1], marker='x')
 
-    plt.xlabel('Mean lesion value')
+    plt.xlabel('n-th percentile value for n = {}'.format(percentile))
     plt.ylabel('Pixel count within window')
     plt.legend((false_plot, true_plot), ('False', 'True'))
-    plt.title('Mean lesion value vs. pixel count in window\n(Lesion cutout size: {}x{}, window: {}-{})\n'
+    plt.title('n-th percentile value vs. pixel count in window\n(Lesion cutout size: {}x{}, window: {}-{})\n'
               'Silhouette score: {}'
               .format(lesions[0].shape[0], lesions[0].shape[0], window[0], window[1],
-                      size_vs_value_score(lesions, labels, window)))
+                      size_vs_value_score(lesions, labels, window, percentile), percentile))
     plt.tight_layout()
     plt.show()
 
 
-def size_vs_value_score(lesions, labels, window):
+def size_vs_value_score(lesions, labels, window, percentile):
     """"Computes silhouette score for a given clustering"""
     lesions_true = lesions[np.where(labels)[0]]  # Gather all true lesions
     lesions_false = lesions[np.where(labels == False)[0]]  # Gather all false lesions
 
-    false_features = size_vs_value(lesions_false, window)
-    true_features = size_vs_value(lesions_true, window)
+    false_features = size_vs_value(lesions_false, window, percentile)
+    true_features = size_vs_value(lesions_true, window, percentile)
 
     false_combined = list(zip(false_features[0], false_features[1]))
     false_labels = [0 for item in false_combined]
@@ -167,9 +167,9 @@ def size_vs_value_score(lesions, labels, window):
         return -1
 
 
-def find_best_window(lesions, labels):
+def find_best_window(lesions, labels, percentile):
     all_windows = [(start, end) for start in range(100, 4000, 100) for end in range(start+100, 4000, 100)]
-    scores = [(size_vs_value_score(lesions, labels, window), window) for window in all_windows]
+    scores = [(size_vs_value_score(lesions, labels, window, percentile), window) for window in all_windows]
     best_window = max(scores)
     return best_window
 
@@ -180,8 +180,8 @@ if __name__ == "__main__":
     query_words = ['ADC']
     X_big, y, attr = get_train_data(h5_file, query_words, size_px=40)
 
-    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=16)
-    size_vs_value_scatter(X, y_labels, find_best_window(X, y_labels)[1])
+    X, y_labels, attr = get_train_data(h5_file, query_words, size_px=8)
+    size_vs_value_scatter(X, y_labels, find_best_window(X, y_labels, 60)[1], 60)
 
     # zones = ['AS', 'PZ', 'TZ']
     # for i in range(4, 18, 2):
