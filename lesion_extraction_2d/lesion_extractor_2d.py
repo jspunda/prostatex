@@ -1,9 +1,9 @@
 import math
 import numpy as np
 import h5py
-# from scipy.misc import imresize
+from scipy.misc import imresize
 from .h5_query import get_lesion_info
-import cv2
+# import cv2
 
 
 class Centroid:
@@ -102,8 +102,8 @@ def get_train_data(h5_file, query_words, size_px=16, size_mm=16):
                 continue
 
             # resample
-            # lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
-            lesion_img = cv2.resize(lesion_img, (size_px, size_px))
+            lesion_img = imresize(lesion_img, (size_px, size_px), interp='bilinear')
+            # lesion_img = cv2.resize(lesion_img, (size_px, size_px))
 
             X.append(lesion_img)
 

@@ -9,7 +9,7 @@ def predict_to_file(filename, path_to_model):
     model = load_model(path_to_model)
 
     # Data
-    h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex', 'prostatex-test.hdf5')
+    h5_file_location = os.path.join('C:\\Users\Jeftha\Documents\ISMI\Final Project\prostatex\h5_converter', 'prostatex-test.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
 
     x, _, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'], size_mm=32, size_px=16)
@@ -18,6 +18,9 @@ def predict_to_file(filename, path_to_model):
     # for lesion in x:
     #     windowed.append(apply_window(lesion, (500, 1100)))
     # x = np.asarray(windowed)
+
+    for lesion in x:
+        lesion[:, :, 0] = apply_window(lesion[:, :, 0], window=(500, 1100))
 
     predictions = model.predict(x, verbose=1)
 
@@ -34,4 +37,4 @@ def predict_to_file(filename, path_to_model):
 
 
 if __name__ == "__main__":
-    predict_to_file('predictions.csv', '../../best_model.hdf5')
+    predict_to_file('predictions.csv', '../best_model.hdf5')

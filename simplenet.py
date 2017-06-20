@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import h5py
+import sys
 import numpy as np
 import os
 
@@ -22,89 +23,88 @@ def get_model(configuration='baseline'):
     AUGMENTATION_CONFIGURATION = configuration
 
     ## Model
-    #model = Sequential()
-    #model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 3)))
-    #model.add(LeakyReLU())
-    #model.add(BatchNormalization())
-    #model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    #model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-    #model.add(LeakyReLU())
-    #model.add(BatchNormalization())
-    #model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    #model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-    #model.add(LeakyReLU())
-    #model.add(BatchNormalization())
-    #model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-    #model.add(LeakyReLU())
-    #model.add(BatchNormalization())
-
-    #model.add(Conv2D(64, (1, 1), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
-    #model.add(LeakyReLU())
-    #model.add(BatchNormalization())
-
-    #model.add(Conv2D(1, (1, 1), activation='sigmoid'))
-    #model.add(Flatten())
-
     model = Sequential()
-    model.add(ZeroPadding2D((1,1),input_shape=(16, 16, 3)))
-    model.add(Conv2D(64, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(64, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2)))
+    model.add(Conv2D(32, (3, 3), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1), input_shape=(16, 16, 3)))
+    model.add(LeakyReLU())
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(128, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(128, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(256, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(256, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(256, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2)))
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
+    model.add(BatchNormalization())
+    model.add(Conv2D(64, (2, 2), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
+    model.add(BatchNormalization())
 
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(512, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(512, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(512, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2)))
+    model.add(Conv2D(64, (1, 1), kernel_initializer='he_normal', bias_initializer=RandomNormal(mean=0.1)))
+    model.add(LeakyReLU())
+    model.add(BatchNormalization())
 
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(512, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(512, 3, 3, activation='relu'))
-    model.add(ZeroPadding2D((1,1)))
-    model.add(Conv2D(512, 3, 3, activation='relu'))
-    #model.add(MaxPooling2D((2,2), strides=(2,2)))
-
+    model.add(Conv2D(1, (1, 1), activation='sigmoid'))
     model.add(Flatten())
-    model.add(Dense(4096, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(4096, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(1, activation='sigmoid'))
+
+    # model = Sequential()
+    # model.add(ZeroPadding2D((1,1),input_shape=(16, 16, 3)))
+    # model.add(Conv2D(64, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(64, 3, 3, activation='relu'))
+    # model.add(MaxPooling2D((2,2), strides=(2,2)))
+    #
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(128, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(128, 3, 3, activation='relu'))
+    # model.add(MaxPooling2D((2,2), strides=(2,2)))
+    #
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(256, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(256, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(256, 3, 3, activation='relu'))
+    # model.add(MaxPooling2D((2,2), strides=(2,2)))
+    #
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(512, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(512, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(512, 3, 3, activation='relu'))
+    # model.add(MaxPooling2D((2,2), strides=(2,2)))
+    #
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(512, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(512, 3, 3, activation='relu'))
+    # model.add(ZeroPadding2D((1,1)))
+    # model.add(Conv2D(512, 3, 3, activation='relu'))
+    # #model.add(MaxPooling2D((2,2), strides=(2,2)))
+    #
+    # model.add(Flatten())
+    # model.add(Dense(4096, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(4096, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(1, activation='sigmoid'))
 
     # For a binary classification problem
     sgd = SGD(lr=0.0005, momentum=0.9)
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     ## Data
-    h5_file_location = os.path.join('/scratch-shared/ISMI/prostatex', 'prostatex-train.hdf5')
+    h5_file_location = os.path.join('C:\\Users\\Jeftha\\stack\\Rommel\\ISMI\\data', 'prostatex-train.hdf5')
     h5_file = h5py.File(h5_file_location, 'r')
     
     train_data_list, train_labels_list, attr = get_train_data(h5_file, ['ADC', 't2_tse_tra', 't2_tse_sag'], size_px=16, size_mm=32)
+    print(train_data_list.shape)
 
-    # windowed = []
-    # for lesion in train_data_list:
-    #     windowed.append(apply_window(lesion[:][:][0], (500, 1100)))
-    # train_data_list = np.asarray(windowed)
+    for lesion in train_data_list:
+        lesion[:, :, 0] = apply_window(lesion[:, :, 0], window=(500, 1100))
 
     train_data, val_data, train_labels, val_labels = train_test_split(train_data_list, train_labels_list, test_size=0.33)
 
@@ -121,7 +121,7 @@ def get_model(configuration='baseline'):
     steps_per_epoch = len(train_labels_list) // batch_size
 
     auc_history = AucHistory(train_data, train_labels, val_data, val_labels, output_graph_name=AUGMENTATION_CONFIGURATION)
-    model.fit_generator(train_generator, steps_per_epoch, epochs=10000, verbose=1, callbacks=[auc_history], max_q_size=50, workers=8)
+    model.fit_generator(train_generator, steps_per_epoch, epochs=100, verbose=1, callbacks=[auc_history], max_q_size=50, workers=8)
 
     return model
 
