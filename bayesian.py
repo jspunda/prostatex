@@ -133,7 +133,7 @@ def get_pixels_in_window(np_array, window):
     else:
         return None
         
-def get_adc_features(h5_file_path, window, lesion_size):
+def get_adc_features(h5_file_path, window, lesion_size, percentile=60):
     """
     Gathers amount of pixels within window and the mean of those pixels for ADC images.
     Returns an ordered dictionary of the form:
@@ -166,7 +166,8 @@ def get_adc_features(h5_file_path, window, lesion_size):
         feature_dict[prox_id] = {}
         if pixels_in_window is not None:
             feature_dict[prox_id]['count'] = len(pixels_in_window)
-            feature_dict[prox_id]['mean'] = pixels_in_window.mean()
+            # feature_dict[prox_id]['mean'] = pixels_in_window.mean()
+            feature_dict[prox_id]['mean'] = np.percentile(pixels_in_window, percentile)
         else:
             feature_dict[prox_id]['count'] = 0
             feature_dict[prox_id]['mean'] = 0
@@ -174,10 +175,10 @@ def get_adc_features(h5_file_path, window, lesion_size):
     return feature_dict
 
 h5_path = "C:\\Users\\Patrick\\Desktop\\ProstateX\\prostatex-train.hdf5"
-featurestrain = get_adc_features(h5_path, (400, 1100), 8)
+features = get_adc_features(h5_path, (400, 1100), 8)
 
 h5_path = "C:\\Users\\Patrick\\Desktop\\ProstateX\\prostatex-test.hdf5"
-featurestest = get_adc_features(h5_path, (400, 1100), 8)
+features = get_adc_features(h5_path, (400, 1100), 8)
 
 #Puts the extra features of the h5 test and training set in a dictionary for later use.
 features = dict(featurestrain.items() + featurestest.items())
@@ -320,9 +321,13 @@ while (bpriorcount[len(bpriorcount) - 1][1] == "unknown"):
 countTable = np.zeros((4,2))
 
 # There are 329 cases with known count. To get 4 bins of roughly equal size we need to cut at 29 45 64
-# with 16 px and window(500,1100)
+# with 16 px and window(500,1100) 
+
+# with 16 px and window(400,1100) and percentile = 45 it is 5, 16 and 28
 
 # with 8 px and window(400,1100) it is 8, 17 and 29
+# with 8 px and window(414,1091) it is 7, 16 and 27
+# with 8 px and window(300,1100) it is 7, 17 28
 
 for i in range (len(bpriorcount)):
     if (bpriorcount[i][1] < 8):
@@ -366,7 +371,12 @@ meanTable = np.zeros((4,2))
 # There are 329 cases with known mean. To get 4 bins of roughly equal size we need to cut at 922, 963 and 989
 # with 16 px and window(500,1100)
 
+# with 16 px and window(400,1100) and percentile = 45 it is 895, 957 and 996
+
 # with 8 px and window(400,1100) it is 898, 956, 966
+# with 8 px and window(414,1091) it is 887, 952.47 and 994
+# with 8 px and window(300,1100) it is 895, 957, 996.5
+
 
 for i in range (len(bpriormean)):
     if (bpriormean[i][2] < 898):
@@ -384,7 +394,7 @@ for i in range (len(bpriormean)):
             meanTable[2][0] = meanTable[2][0] + 1
         elif (bpriormean[i][6] == False):
             meanTable[2][1] = meanTable[2][1] + 1
-    if (bpriormean[i][2] >= 966):
+    if (bpriormean[i][2] >= 996):
         if (bpriormean[i][6] == True):
             meanTable[3][0] = meanTable[3][0] + 1
         elif (bpriormean[i][6] == False):
@@ -528,9 +538,9 @@ for i in range (0, len(bpred)):
     
     if (bpred[i][4] < 24.5):
         pBMI = BMI1
-    if (bpred[i][4] >= 24.5 and bpred[i][2] < 26.25):
+    if (bpred[i][4] >= 24.5 and bpred[i][4] < 26.25):
         pBMI = BMI2
-    if (bpred[i][4] >= 26.25 and bpred[i][2] < 28.00):
+    if (bpred[i][4] >= 26.25 and bpred[i][4] < 28.00):
         pBMI = BMI3
     if (bpred[i][4] >= 28.00):
         pBMI = BMI4
@@ -539,32 +549,36 @@ for i in range (0, len(bpred)):
 
     if (bpred[i][5] < 60):
         pAge = Age1
-    if (bpred[i][5] >= 60 and bpred[i][3] < 65):
+    if (bpred[i][5] >= 60 and bpred[i][5] < 65):
         pAge = Age2
-    if (bpred[i][5] >= 65 and bpred[i][3] < 69):
+    if (bpred[i][5] >= 65 and bpred[i][5] < 69):
         pAge = Age3
     if (bpred[i][5] >= 69):
         pAge = Age4
     
+    p = pcount + pmean + pZone - (pcount * pmean) - (pcount * pZone) - (pmean * pZone) + (pcount * pmean * pZone)
+
+    '''
     #This calculates the final prediction of the Bayesian classifier.
-    p = pcount + pmean + pZone + pBMI + pAge
-    - (pcount * pmean) - (pcount * pZone) - (pcount * pBMI) - (pcount * pAge)
-    - (pmean * pZone) - (pmean * pBMI) - (pmean * pAge)
-    - (pZone * pBMI) - (pZone * pAge)
-    - (pBMI * pAge)
-    + (pcount * pmean * pZone) + (pcount * pmean * pBMI) + (pcount * pmean * pAge)
-    + (pcount * pZone * pBMI) + (pcount * pZone * pAge)
-    + (pcount * pBMI * pAge)
-    + (pmean * pZone * pBMI) + (pmean * pZone * pAge)
-    + (pmean * pBMI * pAge)
-    + (pZone * pBMI * pAge)
-    - (pcount * pmean * pZone * pBMI)
-    - (pcount * pmean * pZone * pAge)
-    - (pcount * pmean * pBMI * pAge)
-    - (pcount * pZone * pBMI * pAge)
-    - (pmean * pZone * pBMI * pAge)
-    + (pcount * pmean * pZone * pBMI * pAge)
-    
+    p = pcount + pmean + pZone + pBMI + pAge \
+    - (pcount * pmean) - (pcount * pZone) - (pcount * pBMI) - (pcount * pAge) \
+    - (pmean * pZone) - (pmean * pBMI) - (pmean * pAge) \
+    - (pZone * pBMI) - (pZone * pAge) \
+    - (pBMI * pAge) \
+    + (pcount * pmean * pZone) + (pcount * pmean * pBMI) + (pcount * pmean * pAge) \
+    + (pcount * pZone * pBMI) + (pcount * pZone * pAge) \
+    + (pcount * pBMI * pAge) \
+    + (pmean * pZone * pBMI) + (pmean * pZone * pAge) \
+    + (pmean * pBMI * pAge) \
+    + (pZone * pBMI * pAge) \
+    - (pcount * pmean * pZone * pBMI) \
+    - (pcount * pmean * pZone * pAge) \
+    - (pcount * pmean * pBMI * pAge) \
+    - (pcount * pZone * pBMI * pAge) \
+    - (pmean * pZone * pBMI * pAge) \
+    + (pcount * pmean * pZone * pBMI * pAge) \
+    '''
+      
     predictions.append((bpred[i][0], p))
 
 #Writes it into a file.

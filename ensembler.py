@@ -41,12 +41,27 @@ weight_bayesian_preds = 0.5
 sum_weights = weight_preds + weight_bayesian_preds
 normalization_factor = 1.00 / sum_weights
 
-
+'''
 for i in range (1, len(ensemble)):
     pred = float(preds[i][1]) * weight_preds * normalization_factor
     bpred = float(bayesian_preds[i][1]) * weight_bayesian_preds * normalization_factor
     ensembled = pred + bpred
     ensemble[i].append(ensembled)
+'''
+
+differences = []
+for i in range (1, len(ensemble)):
+    pred = float(preds[i][1])
+    bpred = float(bayesian_preds[i][1])
+    
+    if (abs(pred - 0.50) > abs(bpred - 0.50)):
+        ensemble[i].append(pred)
+    else:
+        ensemble[i].append(bpred)
+    
+    difference = abs(pred - bpred)
+    differences.append(difference)
+    
 
 #writes the ensembled predictions into a .csv file
 with open('ensemble.csv', 'wb') as csvfile:
